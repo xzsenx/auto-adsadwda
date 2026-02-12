@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AUTØ — Продажа авто</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- noise overlay -->
+<div class="noise" aria-hidden="true"></div>
+
+<!-- header -->
+<header class="topbar">
+  <a href="#" class="logo">■ AUTØ</a>
+  <nav class="nav">
+    <a href="#catalog">Каталог</a>
+    <a href="#about">О нас</a>
+  </nav>
+  <div class="topbar-actions">
+    <button class="btn btn-sm" id="btnInvert">Invert</button>
+    <button class="btn btn-icon" id="btnFav" aria-label="Избранное">
+      ♡ <span class="pill" id="favCount">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- marquee -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>НАДЁЖНОСТЬ / СКОРОСТЬ / СТИЛЬ / ВЫГОДА / ГАРАНТИЯ / ПРОВЕРЕНО / ДОСТАВКА / НАДЁЖНОСТЬ / СКОРОСТЬ / СТИЛЬ / ВЫГОДА / ГАРАНТИЯ / ПРОВЕРЕНО / ДОСТАВКА /&nbsp;</span>
+    <span>НАДЁЖНОСТЬ / СКОРОСТЬ / СТИЛЬ / ВЫГОДА / ГАРАНТИЯ / ПРОВЕРЕНО / ДОСТАВКА / НАДЁЖНОСТЬ / СКОРОСТЬ / СТИЛЬ / ВЫГОДА / ГАРАНТИЯ / ПРОВЕРЕНО / ДОСТАВКА /&nbsp;</span>
+  </div>
+</div>
+
+<!-- hero -->
+<section class="hero reveal">
+  <div class="hero-text">
+    <p class="kicker">TELEGRAM КАНАЛ</p>
+    <h1>Купи авто<br>без&nbsp;головной боли</h1>
+    <p class="lead">Проверенные автомобили с гарантией. Подбор, проверка, доставка — всё под ключ.</p>
+    <div class="hero-btns">
+      <a href="#catalog" class="btn btn-primary">Смотреть каталог</a>
+      <a href="https://t.me/" class="btn" target="_blank" rel="noopener">Telegram канал</a>
+    </div>
+    <div class="hero-meta">
+      <div class="meta-item">
+        <span class="meta-val">200+</span>
+        <span class="meta-label">Продано</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-val">100%</span>
+        <span class="meta-label">Проверка</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-val">24/7</span>
+        <span class="meta-label">Поддержка</span>
+      </div>
+    </div>
+  </div>
+  <div class="hero-poster">
+    <div class="poster-shape"></div>
+  </div>
+</section>
+
+<!-- filters -->
+<section class="filters-bar" id="catalog">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">КАТАЛОГ</p>
+      <h2>Актуальные авто</h2>
+    </div>
+    <div class="filters">
+      <button class="chip active" data-filter="all">Все</button>
+      <button class="chip" data-filter="sedan">Седан</button>
+      <button class="chip" data-filter="suv">Кроссовер</button>
+      <button class="chip" data-filter="sport">Спорт</button>
+      <button class="chip" data-filter="business">Бизнес</button>
+    </div>
+  </div>
+</section>
+
+<!-- catalog grid -->
+<section class="catalog container">
+  <div class="grid" id="carGrid">
+    <!-- cards rendered by JS -->
+  </div>
+</section>
+
+<!-- about -->
+<section class="about reveal" id="about">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">О НАС</p>
+      <h2>Почему мы</h2>
+    </div>
+    <div class="about-grid">
+      <div class="about-card">
+        <h3>Проверка</h3>
+        <p>Каждый автомобиль проходит полную диагностику — юридическую и техническую.</p>
+      </div>
+      <div class="about-card">
+        <h3>Гарантия</h3>
+        <p>Даём гарантию на каждое авто. Если что-то не так — вернём деньги.</p>
+      </div>
+      <div class="about-card">
+        <h3>Контакты</h3>
+        <p>Telegram-канал — основная площадка.<br>Пишите, звоните, приезжайте.</p>
+        <a href="https://t.me/" class="btn btn-sm" target="_blank" rel="noopener">Написать →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- footer -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <span class="logo">■ AUTØ</span>
+    <span class="muted">© 2026 — Все авто проверены</span>
+    <div class="footer-links">
+      <a href="https://t.me/" target="_blank" rel="noopener">Telegram</a>
+    </div>
+  </div>
+</footer>
+
+<!-- modal -->
+<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <button class="btn btn-icon modal-close" id="modalClose">✕</button>
+  <div class="modal-body" id="modalBody">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<!-- drawer (favorites) -->
+<div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="drawer-head">
+    <h2>Избранное</h2>
+    <button class="btn btn-icon" id="drawerClose">✕</button>
+  </div>
+  <div class="drawer-items" id="drawerItems">
+    <!-- filled by JS -->
+  </div>
+  <div class="drawer-footer">
+    <a href="https://t.me/" class="btn btn-primary btn-full" target="_blank" rel="noopener">Написать в Telegram</a>
+    <button class="btn btn-full" id="btnClearFav">Очистить</button>
+  </div>
+</aside>
+
+<script src="app.js"></script>
+</body>
+</html>

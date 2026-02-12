@@ -1,0 +1,37 @@
+[
+  {
+    "id": "camry-2023",
+    "title": "Toyota Camry",
+    "price": "2 450 000 ₽",
+    "tag": "SEDAN",
+    "category": "sedan",
+    "images": [
+      "./photos/camry-1.jpg",
+      "./photos/camry-2.jpg"
+    ],
+    "desc": "Надёжный седан для города и трассы. Пробег 32 000 км, один владелец.",
+    "specs": {
+      "year": "2023",
+      "km": "32 000",
+      "engine": "2.5L",
+      "drive": "Передний"
+    }
+  },
+  {
+    "id": "bmw-x5",
+    "title": "BMW X5 xDrive",
+    "price": "5 900 000 ₽",
+    "tag": "SUV",
+    "category": "suv",
+    "images": [
+      "./photos/bmw-x5-1.jpg"
+    ],
+    "desc": "Премиальный кроссовер. Полный привод, панорама, адаптивная подвеска.",
+    "specs": {
+      "year": "2022",
+      "km": "41 000",
+      "engine": "3.0L Turbo",
+      "drive": "Полный"
+    }
+  }
+]
