@@ -1,5 +1,23 @@
 [
   {
+    "id": "toyota-camry-101",
+    "title": "Toyota Camry",
+    "price": "1 200 000 ₽",
+    "tag": "SEDAN",
+    "category": "sedan",
+    "media_group_id": "14168802177375922",
+    "images": [
+      "./photos/toyota-camry-101-1.jpg"
+    ],
+    "desc": "Продам Toyota Camry в отличном состоянии. Машина ухоженная, без вложений. Все сервисные работы проведены вовремя. Торг уместен.",
+    "specs": {
+      "year": "2023",
+      "km": "45 000",
+      "engine": "2.0L",
+      "drive": "Полный"
+    }
+  },
+  {
     "id": "volkswagen-touran-l-cross-99",
     "title": "Volkswagen Touran L Cross",
     "price": "2,220,000 ₽",
