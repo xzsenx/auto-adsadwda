@@ -1,5 +1,23 @@
 [
   {
+    "id": "mazda-cx5-124",
+    "title": "Mazda CX5",
+    "price": "2,440,000 ₽",
+    "tag": "SUV",
+    "category": "suv",
+    "media_group_id": "14168819001385122",
+    "images": [
+      "./photos/mazda-cx5-124-1.jpg"
+    ],
+    "desc": "MAZDA CX5 2.0, заводской окрас, доставка до РФ — 45 дней.",
+    "specs": {
+      "year": "2022",
+      "km": "37,900",
+      "engine": "2.0L",
+      "drive": ""
+    }
+  },
+  {
     "id": "toyota-camry-101",
     "title": "Toyota Camry",
     "price": "1 200 000 ₽",
