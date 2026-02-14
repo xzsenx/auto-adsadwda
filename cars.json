@@ -1,5 +1,23 @@
 [
   {
+    "id": "mercedesbenz-sclass-126",
+    "title": "Mercedes-Benz S-Class",
+    "price": "1 200 000 ₽",
+    "tag": "BUSINESS",
+    "category": "business",
+    "media_group_id": "14168819001385122",
+    "images": [
+      "./photos/mercedesbenz-sclass-126-1.jpg"
+    ],
+    "desc": "Продаётся Mercedes-Benz S-Class 2023 года в отличном состоянии, полный комплект документов, один владелец.",
+    "specs": {
+      "year": "2023",
+      "km": "45 000",
+      "engine": "2.0L",
+      "drive": "Полный"
+    }
+  },
+  {
     "id": "mazda-cx5-124",
     "title": "Mazda CX5",
     "price": "2,440,000 ₽",
