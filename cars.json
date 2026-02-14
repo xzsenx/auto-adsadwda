@@ -1,5 +1,23 @@
 [
   {
+    "id": "mercedesbenz-sclass-133",
+    "title": "Mercedes-Benz S-Class",
+    "price": "12 500 000 ₽",
+    "tag": "BUSINESS",
+    "category": "business",
+    "media_group_id": "14168821475903994",
+    "images": [
+      "./photos/mercedesbenz-sclass-133-1.jpg"
+    ],
+    "desc": "Mercedes-Benz S-Class 2023 года в идеальном состоянии, полный пакет опций, один владелец.",
+    "specs": {
+      "year": "2023",
+      "km": "15 000",
+      "engine": "3.0L",
+      "drive": "Полный"
+    }
+  },
+  {
     "id": "mercedesbenz-sclass-126",
     "title": "Mercedes-Benz S-Class",
     "price": "1 200 000 ₽",
