@@ -283,7 +283,7 @@ body.invert .chip:hover { border-color: rgba(0,0,0,.25); }
 
 .card-media {
   position: relative;
-  aspect-ratio: 16/10;
+  aspect-ratio: 4/3;
   background: var(--card);
   overflow: hidden;
   display: flex;
@@ -324,10 +324,9 @@ body.invert .chip:hover { border-color: rgba(0,0,0,.25); }
 .card-media .car-img {
   width: 100%; height: 100%;
   object-fit: cover;
-  filter: grayscale(.3);
-  transition: filter .4s;
+  transition: filter .4s, transform .4s;
 }
-.car-card:hover .car-img { filter: grayscale(0); }
+.car-card:hover .car-img { transform: scale(1.03); }
 
 /* placeholder when no image */
 .car-placeholder {
@@ -482,7 +481,7 @@ body.invert .card-chip:hover { border-color: rgba(0,0,0,.25); }
 .modal-close { position: absolute; top: 14px; right: 14px; z-index: 1; }
 
 .modal-media {
-  aspect-ratio: 16/10;
+  aspect-ratio: 4/3;
   border-radius: 12px;
   background: var(--card);
   display: flex; align-items: center; justify-content: center;
@@ -604,13 +603,12 @@ body.invert .card-chip:hover { border-color: rgba(0,0,0,.25); }
 
 /* drawer thumbnails */
 .drawer-item-thumb {
-  width: 56px; height: 40px;
+  width: 64px; height: 48px;
   border-radius: 8px;
   object-fit: cover;
-  filter: grayscale(.4);
 }
 .drawer-item-placeholder {
-  width: 56px; height: 40px;
+  width: 64px; height: 48px;
   border-radius: 8px;
   background: var(--card);
   display: flex; align-items: center; justify-content: center;

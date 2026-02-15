@@ -1,6 +1,6 @@
 /* ===== CONFIG ===== */
-const DATA_URL = './cars.json';          // n8n будет обновлять этот файл
-const TG_CHANNEL = 'https://t.me/';     // замени на свой канал
+const DATA_URL = 'https://qzxoonsqalnjaqfrhhth.supabase.co/storage/v1/object/public/auto/cars.json';
+const TG_CHANNEL = 'https://t.me/auto_from_korea_test';
 
 /* ===== FALLBACK DATA (пока n8n не подключён) ===== */
 const FALLBACK_CARS = [
@@ -158,6 +158,7 @@ function openModal(carId) {
     <button class="btn btn-primary btn-full" data-fav-modal="${car.id}">
       ${isFav ? '♥ В избранном' : '♡ Добавить в избранное'}
     </button>
+    ${car.message_id ? `<a href="${TG_CHANNEL}/${car.message_id}" class="btn btn-full" target="_blank" rel="noopener" style="margin-top:10px">Все фото в Telegram →</a>` : ''}
     <a href="${TG_CHANNEL}" class="btn btn-full" target="_blank" rel="noopener" style="margin-top:10px">Написать в Telegram →</a>
   `;
 
