@@ -57,11 +57,12 @@ const drawerItems = $('#drawerItems');
 /* ===== LOAD DATA ===== */
 async function loadCars() {
   try {
-    const res = await fetch(DATA_URL + '?t=' + Date.now()); // cache-bust
+    const res = await fetch(DATA_URL + '?t=' + Date.now());
     if (!res.ok) throw new Error(res.status);
-    CARS = await res.json();
-  } catch {
-    console.warn('cars.json не найден — используем fallback данные');
+    const data = await res.json();
+    CARS = Array.isArray(data) && data.length > 0 ? data : FALLBACK_CARS;
+  } catch(e) {
+    console.warn('cars.json ошибка:', e);
     CARS = FALLBACK_CARS;
   }
   updateFavCount();
