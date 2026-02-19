@@ -558,7 +558,9 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-/* ===== ADMIN CHECK (ADMIN_IDS, ADMIN_PASS from config.js) ===== */
+/* ===== ADMIN CHECK ===== */
+const ADMIN_IDS = [0];
+const ADMIN_PASS = 'auto2026';
 function checkAdmin() {
   const tg = window.Telegram?.WebApp;
   if (tg?.initDataUnsafe?.user?.id) {

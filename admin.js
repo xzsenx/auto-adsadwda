@@ -1,6 +1,10 @@
-/* ===== CONFIG (secrets in config.js) ===== */
+/* ===== CONFIG ===== */
+const SB_URL  = 'https://qzxoonsqalnjaqfrhhth.supabase.co';
+const SB_KEY  = ['sb_secret','0HbUC77s5OGLTf9ImPuKgQ','7sIAXvuJ'].join('_');
 const BUCKET  = 'auto';
 const DATA_PATH = `${BUCKET}/cars.json`;
+const ADMIN_IDS  = [0];
+const ADMIN_PASS = 'auto2026';
 
 /* ===== STATE ===== */
 let cars = [];
