@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AUTØ — Админ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="admin.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+<!-- noise overlay -->
+<div class="noise" aria-hidden="true"></div>
+
+<!-- header -->
+<header class="topbar">
+  <a href="#" class="logo">■ AUTØ <span class="admin-badge">ADMIN</span></a>
+  <nav class="nav">
+    <a href="index.html">← Каталог</a>
+  </nav>
+</header>
+
+<!-- auth screen -->
+<section class="admin-auth" id="authScreen">
+  <div class="auth-box">
+    <h2>Вход в панель</h2>
+    <p class="muted">Введите пароль администратора</p>
+    <input type="password" class="filter-input auth-input" id="passInput" placeholder="Пароль" autocomplete="off">
+    <button class="btn btn-primary btn-full" id="btnLogin">Войти</button>
+    <p class="auth-error" id="authError"></p>
+  </div>
+</section>
+
+<!-- admin panel -->
+<section class="admin-panel" id="adminPanel" style="display:none">
+  <div class="container">
+
+    <!-- toolbar -->
+    <div class="admin-toolbar">
+      <h2>Объявления <span class="pill" id="carsCount">0</span></h2>
+      <button class="btn btn-primary" id="btnAddCar">+ Добавить</button>
+    </div>
+
+    <!-- car list -->
+    <div class="admin-list" id="adminList">
+      <!-- filled by JS -->
+    </div>
+
+  </div>
+</section>
+
+<!-- edit modal -->
+<div class="modal-backdrop" id="editBackdrop" aria-hidden="true"></div>
+<div class="modal admin-modal" id="editModal" role="dialog" aria-modal="true" aria-hidden="true">
+  <button class="btn btn-icon modal-close" id="editClose">✕</button>
+  <div class="modal-body">
+    <h2 class="modal-title" id="editTitle">Редактирование</h2>
+    <form class="admin-form" id="editForm" autocomplete="off">
+      <div class="form-group">
+        <label class="filter-label">Название</label>
+        <input type="text" class="filter-input" name="title" required>
+      </div>
+      <div class="form-group">
+        <label class="filter-label">Цена</label>
+        <div class="price-input-wrap">
+          <input type="text" class="filter-input" name="price" placeholder="5 250 000" required>
+          <span class="price-suffix">₽</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="filter-label">Категория</label>
+          <select class="filter-input" name="category">
+            <option value="sedan">Седан</option>
+            <option value="suv">Кроссовер</option>
+            <option value="sport">Спорт</option>
+            <option value="business">Бизнес</option>
+            <option value="hatchback">Хэтчбек</option>
+            <option value="wagon">Универсал</option>
+            <option value="minivan">Минивэн</option>
+            <option value="pickup">Пикап</option>
+            <option value="electric">Электро</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="filter-label">Тег</label>
+          <input type="text" class="filter-input" name="tag" placeholder="SEDAN, SUV, SPORT...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="filter-label">Описание</label>
+        <textarea class="filter-input admin-textarea" name="desc" rows="3"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="filter-label">Год</label>
+          <input type="text" class="filter-input" name="year">
+        </div>
+        <div class="form-group">
+          <label class="filter-label">Пробег</label>
+          <input type="text" class="filter-input" name="km" placeholder="43 000">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="filter-label">Двигатель</label>
+          <input type="text" class="filter-input" name="engine" placeholder="184 л.с.">
+        </div>
+        <div class="form-group">
+          <label class="filter-label">Привод</label>
+          <select class="filter-input" name="drive">
+            <option value="">—</option>
+            <option value="Полный">Полный</option>
+            <option value="Передний">Передний</option>
+            <option value="Задний">Задний</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="filter-label">Фото</label>
+        <input type="file" class="filter-input file-input" name="photo" accept="image/*">
+        <div class="photo-preview" id="photoPreview"></div>
+      </div>
+      <input type="hidden" name="id">
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <button type="button" class="btn" id="editCancel">Отмена</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- confirm dialog -->
+<div class="modal-backdrop" id="confirmBackdrop" aria-hidden="true"></div>
+<div class="modal admin-modal confirm-modal" id="confirmModal" aria-hidden="true">
+  <div class="modal-body confirm-body">
+    <h3 id="confirmText">Удалить объявление?</h3>
+    <div class="form-actions">
+      <button class="btn btn-danger" id="confirmYes">Удалить</button>
+      <button class="btn" id="confirmNo">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

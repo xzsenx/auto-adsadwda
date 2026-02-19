@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
@@ -21,6 +22,7 @@
     <a href="#about">О нас</a>
   </nav>
   <div class="topbar-actions">
+    <a href="admin.html" class="btn btn-sm" id="btnAdmin" style="display:none">Admin</a>
     <button class="btn btn-sm" id="btnInvert">Invert</button>
     <button class="btn btn-icon" id="btnFav" aria-label="Избранное">
       ♡ <span class="pill" id="favCount">0</span>
@@ -85,6 +87,77 @@
       <button class="chip" data-filter="pickup">Пикап</button>
       <button class="chip" data-filter="electric">Электро</button>
     </div>
+
+    <!-- sort & filter controls -->
+    <div class="sort-bar">
+      <div class="sort-chips">
+        <button class="sort-chip active" data-sort="default">По умолчанию</button>
+        <button class="sort-chip" data-sort="price-asc">Цена ↑</button>
+        <button class="sort-chip" data-sort="price-desc">Цена ↓</button>
+        <button class="sort-chip" data-sort="year-desc">Новее</button>
+        <button class="sort-chip" data-sort="km-asc">Пробег ↑</button>
+      </div>
+      <button class="btn btn-icon filter-toggle-btn" id="btnFilterPanel" aria-label="Фильтры">☰</button>
+    </div>
+
+    <!-- advanced filter panel (collapsed) -->
+    <div class="filter-panel" id="filterPanel" aria-hidden="true">
+      <div class="filter-panel-inner">
+        <div class="filter-group">
+          <label class="filter-label">Марка</label>
+          <div class="filter-chips-row" id="brandChips">
+            <!-- filled by JS from loaded data -->
+          </div>
+          <div class="filter-chips-row model-chips-wrap" id="modelChips"></div>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Цена, ₽</label>
+          <div class="filter-range-row">
+            <input type="number" class="filter-input" id="priceMin" placeholder="от" min="0" step="100000">
+            <span class="filter-dash">—</span>
+            <input type="number" class="filter-input" id="priceMax" placeholder="до" min="0" step="100000">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Год</label>
+          <div class="filter-range-row">
+            <input type="number" class="filter-input" id="yearMin" placeholder="от" min="2000" max="2026">
+            <span class="filter-dash">—</span>
+            <input type="number" class="filter-input" id="yearMax" placeholder="до" min="2000" max="2026">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Пробег, км</label>
+          <div class="filter-range-row">
+            <input type="number" class="filter-input" id="kmMin" placeholder="от" min="0" step="5000">
+            <span class="filter-dash">—</span>
+            <input type="number" class="filter-input" id="kmMax" placeholder="до" min="0" step="5000">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Мощность, л.с.</label>
+          <div class="filter-range-row">
+            <input type="number" class="filter-input" id="hpMin" placeholder="от" min="0" step="10">
+            <span class="filter-dash">—</span>
+            <input type="number" class="filter-input" id="hpMax" placeholder="до" min="0" step="10">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Привод</label>
+          <div class="filter-chips-row">
+            <button class="chip small active" data-drive="all">Все</button>
+            <button class="chip small" data-drive="Полный">Полный</button>
+            <button class="chip small" data-drive="Передний">Передний</button>
+            <button class="chip small" data-drive="Задний">Задний</button>
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-primary btn-sm" id="btnApplyFilters">Применить</button>
+          <button class="btn btn-sm" id="btnResetFilters">Сбросить</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -156,6 +229,7 @@
   </div>
 </aside>
 
+<script src="config.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

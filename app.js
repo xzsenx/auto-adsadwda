@@ -40,6 +40,9 @@ const FALLBACK_CARS = [
 let CARS = [];
 let favorites = JSON.parse(localStorage.getItem('auto_favs') || '[]');
 let currentFilter = 'all';
+let currentSort = 'default';
+let advancedFilters = { brands: new Set(), models: new Map(), priceMin: null, priceMax: null, yearMin: null, yearMax: null, kmMin: null, kmMax: null, hpMin: null, hpMax: null, drive: 'all' };
+let filterPanelOpen = false;
 
 /* ===== DOM ===== */
 const $ = (s, p = document) => p.querySelector(s);
@@ -54,6 +57,31 @@ const drawer = $('#drawer');
 const drawerBackdrop = $('#drawerBackdrop');
 const drawerItems = $('#drawerItems');
 
+/* ===== PARSE HELPERS ===== */
+function parsePrice(str) {
+  return parseInt(str.replace(/[^0-9]/g, ''), 10) || 0;
+}
+function parseKm(str) {
+  return parseInt(str.replace(/[^0-9]/g, ''), 10) || 0;
+}
+function parseHp(str) {
+  // "150 л.с." -> 150, "150 лс" -> 150, "2.0L" -> 0, "3.0L Turbo" -> 0
+  const m = str.match(/(\d+)\s*(?:л\.?с|hp)/i);
+  return m ? parseInt(m[1], 10) : 0;
+}
+function getBrand(title) {
+  // "BMW X5 xDrive" -> "BMW", "Mercedes-Benz S-Class" -> "Mercedes-Benz"
+  const parts = title.split(' ');
+  if (parts.length >= 2 && parts[0].endsWith('-')) return parts[0] + parts[1];
+  if (title.includes('-') && parts[0].includes('-')) return parts[0];
+  return parts[0];
+}
+function getModel(title) {
+  return title.slice(getBrand(title).length).trim();
+}
+
+const POPULAR_BRANDS = ['BMW','Mercedes-Benz','Toyota','Hyundai','Kia','Audi','Volkswagen','Lexus','Mazda','Porsche','Nissan','Honda'];
+
 /* ===== LOAD DATA ===== */
 async function loadCars() {
   try {
@@ -65,9 +93,43 @@ async function loadCars() {
     console.warn('cars.json ошибка:', e);
     CARS = FALLBACK_CARS;
   }
+  buildBrandChips();
   updateFavCount();
   renderCards();
   observeReveals();
+}
+
+/* ===== BRAND CHIPS (dynamic, popular first) ===== */
+function buildBrandChips() {
+  const allBrands = [...new Set(CARS.map(c => getBrand(c.title)))];
+  const popular = POPULAR_BRANDS.filter(b => allBrands.includes(b));
+  const rest = allBrands.filter(b => !POPULAR_BRANDS.includes(b)).sort();
+  const sorted = [...popular, ...rest];
+
+  const container = $('#brandChips');
+  container.innerHTML =
+    `<button class="chip small active" data-brand="all">Все</button>` +
+    sorted.map(b => `<button class="chip small" data-brand="${b}">${b}</button>`).join('');
+}
+
+function buildModelChips() {
+  const container = $('#modelChips');
+  if (advancedFilters.brands.size === 0) { container.innerHTML = ''; return; }
+
+  let html = '';
+  for (const brand of advancedFilters.brands) {
+    const models = [...new Set(CARS.filter(c => getBrand(c.title) === brand).map(c => getModel(c.title)))].sort();
+    if (models.length <= 1) continue;
+    const selModels = advancedFilters.models.get(brand);
+    html += `<div class="model-group" data-model-brand="${brand}">` +
+      `<span class="model-brand-label">${brand}:</span>` +
+      `<button class="chip small${!selModels ? ' active' : ''}" data-model="all" data-model-brand="${brand}">Все</button>` +
+      models.map(m =>
+        `<button class="chip small${selModels?.has(m) ? ' active' : ''}" data-model="${m}" data-model-brand="${brand}">${m}</button>`
+      ).join('') +
+      `</div>`;
+  }
+  container.innerHTML = html;
 }
 
 /* ===== IMAGE HELPERS ===== */
@@ -102,16 +164,19 @@ function carGallery(car) {
 
 /* ===== RENDER CARDS ===== */
 function renderCards() {
-  const filtered = currentFilter === 'all'
-    ? CARS
+  let list = currentFilter === 'all'
+    ? [...CARS]
     : CARS.filter(c => c.category === currentFilter);
 
-  if (filtered.length === 0) {
-    grid.innerHTML = '<div class="grid-empty">Нет авто в этой категории</div>';
+  list = applyAdvancedFilters(list);
+  list = applySorting(list);
+
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="grid-empty">Нет авто по заданным параметрам</div>';
     return;
   }
 
-  grid.innerHTML = filtered.map(car => {
+  grid.innerHTML = list.map(car => {
     const isFav = favorites.includes(car.id);
     return `
       <div class="car-card reveal" data-id="${car.id}">
@@ -260,7 +325,102 @@ function clearFavs() {
 /* ===== FILTERS ===== */
 function setFilter(filter) {
   currentFilter = filter;
-  $$('.chip').forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
+  $$('.chip[data-filter]').forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
+  renderCards();
+}
+
+/* ===== ADVANCED FILTERS & SORTING ===== */
+function applyAdvancedFilters(cars) {
+  return cars.filter(car => {
+    const brand = getBrand(car.title);
+    const price = parsePrice(car.price);
+    const year = parseInt(car.specs.year, 10);
+    const km = parseKm(car.specs.km);
+    const hp = parseHp(car.specs.engine);
+    const drive = (car.specs.drive || '').trim();
+    if (advancedFilters.brands.size > 0) {
+      if (!advancedFilters.brands.has(brand)) return false;
+      const selModels = advancedFilters.models.get(brand);
+      if (selModels && selModels.size > 0) {
+        if (!selModels.has(getModel(car.title))) return false;
+      }
+    }
+    if (advancedFilters.priceMin !== null && price < advancedFilters.priceMin) return false;
+    if (advancedFilters.priceMax !== null && price > advancedFilters.priceMax) return false;
+    if (advancedFilters.yearMin !== null && year < advancedFilters.yearMin) return false;
+    if (advancedFilters.yearMax !== null && year > advancedFilters.yearMax) return false;
+    if (advancedFilters.kmMin !== null && km < advancedFilters.kmMin) return false;
+    if (advancedFilters.kmMax !== null && km > advancedFilters.kmMax) return false;
+    if (advancedFilters.hpMin !== null && hp > 0 && hp < advancedFilters.hpMin) return false;
+    if (advancedFilters.hpMax !== null && hp > 0 && hp > advancedFilters.hpMax) return false;
+    if (advancedFilters.drive !== 'all' && drive !== advancedFilters.drive) return false;
+    return true;
+  });
+}
+
+function applySorting(cars) {
+  if (currentSort === 'default') return cars;
+  const cmp = {
+    'price-asc':  (a, b) => parsePrice(a.price) - parsePrice(b.price),
+    'price-desc': (a, b) => parsePrice(b.price) - parsePrice(a.price),
+    'year-desc':  (a, b) => parseInt(b.specs.year, 10) - parseInt(a.specs.year, 10),
+    'km-asc':     (a, b) => parseKm(a.specs.km) - parseKm(b.specs.km),
+  };
+  return cars.sort(cmp[currentSort]);
+}
+
+function setSort(sort) {
+  currentSort = sort;
+  $$('.sort-chip').forEach(c => c.classList.toggle('active', c.dataset.sort === sort));
+  renderCards();
+}
+
+/* ===== FILTER PANEL ===== */
+const filterPanel = $('#filterPanel');
+const btnFilterPanel = $('#btnFilterPanel');
+
+function toggleFilterPanel() {
+  filterPanelOpen = !filterPanelOpen;
+  filterPanel.classList.toggle('open', filterPanelOpen);
+  filterPanel.setAttribute('aria-hidden', String(!filterPanelOpen));
+  btnFilterPanel.classList.toggle('panel-open', filterPanelOpen);
+}
+
+function applyFilterPanel() {
+  const pMin = $('#priceMin').value;
+  const pMax = $('#priceMax').value;
+  const yMin = $('#yearMin').value;
+  const yMax = $('#yearMax').value;
+  const kMin = $('#kmMin').value;
+  const kMax = $('#kmMax').value;
+  const hMin = $('#hpMin').value;
+  const hMax = $('#hpMax').value;
+
+  advancedFilters.priceMin = pMin ? parseInt(pMin, 10) : null;
+  advancedFilters.priceMax = pMax ? parseInt(pMax, 10) : null;
+  advancedFilters.yearMin  = yMin ? parseInt(yMin, 10) : null;
+  advancedFilters.yearMax  = yMax ? parseInt(yMax, 10) : null;
+  advancedFilters.kmMin    = kMin ? parseInt(kMin, 10) : null;
+  advancedFilters.kmMax    = kMax ? parseInt(kMax, 10) : null;
+  advancedFilters.hpMin    = hMin ? parseInt(hMin, 10) : null;
+  advancedFilters.hpMax    = hMax ? parseInt(hMax, 10) : null;
+
+  renderCards();
+}
+
+function resetFilterPanel() {
+  advancedFilters = { brands: new Set(), models: new Map(), priceMin: null, priceMax: null, yearMin: null, yearMax: null, kmMin: null, kmMax: null, hpMin: null, hpMax: null, drive: 'all' };
+  $('#priceMin').value = '';
+  $('#priceMax').value = '';
+  $('#yearMin').value = '';
+  $('#yearMax').value = '';
+  $('#kmMin').value = '';
+  $('#kmMax').value = '';
+  $('#hpMin').value = '';
+  $('#hpMax').value = '';
+  $$('[data-drive]').forEach(c => c.classList.toggle('active', c.dataset.drive === 'all'));
+  $$('[data-brand]').forEach(c => c.classList.toggle('active', c.dataset.brand === 'all'));
+  $('#modelChips').innerHTML = '';
   renderCards();
 }
 
@@ -284,6 +444,60 @@ $('#btnInvert').addEventListener('click', () => document.body.classList.toggle('
 /* ===== EVENT DELEGATION ===== */
 document.addEventListener('click', (e) => {
   const target = e.target;
+
+  // sort chips
+  if (target.matches('.sort-chip[data-sort]')) {
+    setSort(target.dataset.sort);
+    return;
+  }
+
+  // model filter chips
+  if (target.matches('[data-model]')) {
+    const brand = target.dataset.modelBrand;
+    const model = target.dataset.model;
+    if (model === 'all') {
+      advancedFilters.models.delete(brand);
+    } else {
+      if (!advancedFilters.models.has(brand)) advancedFilters.models.set(brand, new Set());
+      const mset = advancedFilters.models.get(brand);
+      if (mset.has(model)) mset.delete(model); else mset.add(model);
+      if (mset.size === 0) advancedFilters.models.delete(brand);
+    }
+    $$(`[data-model-brand="${brand}"] [data-model], [data-model][data-model-brand="${brand}"]`).forEach(c => {
+      if (c.dataset.model === 'all') c.classList.toggle('active', !advancedFilters.models.has(brand));
+      else c.classList.toggle('active', !!advancedFilters.models.get(brand)?.has(c.dataset.model));
+    });
+    return;
+  }
+
+  // brand filter chips in advanced panel (multi-select)
+  if (target.matches('[data-brand]')) {
+    const b = target.dataset.brand;
+    if (b === 'all') {
+      advancedFilters.brands.clear();
+      advancedFilters.models.clear();
+    } else {
+      if (advancedFilters.brands.has(b)) {
+        advancedFilters.brands.delete(b);
+        advancedFilters.models.delete(b);
+      } else {
+        advancedFilters.brands.add(b);
+      }
+    }
+    $$('[data-brand]').forEach(c => {
+      if (c.dataset.brand === 'all') c.classList.toggle('active', advancedFilters.brands.size === 0);
+      else c.classList.toggle('active', advancedFilters.brands.has(c.dataset.brand));
+    });
+    buildModelChips();
+    return;
+  }
+
+  // drive filter chips in advanced panel
+  if (target.matches('[data-drive]')) {
+    advancedFilters.drive = target.dataset.drive;
+    $$('[data-drive]').forEach(c => c.classList.toggle('active', c.dataset.drive === advancedFilters.drive));
+    return;
+  }
 
   // filter chips
   if (target.matches('.chip[data-filter]')) {
@@ -330,13 +544,34 @@ $('#btnClearFav').addEventListener('click', clearFavs);
 $('#modalClose').addEventListener('click', closeModal);
 $('#modalBackdrop').addEventListener('click', closeModal);
 
+// filter panel
+btnFilterPanel.addEventListener('click', toggleFilterPanel);
+$('#btnApplyFilters').addEventListener('click', applyFilterPanel);
+$('#btnResetFilters').addEventListener('click', resetFilterPanel);
+
 // escape key
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeModal();
     closeDrawer();
+    if (filterPanelOpen) toggleFilterPanel();
   }
 });
+
+/* ===== ADMIN CHECK (ADMIN_IDS, ADMIN_PASS from config.js) ===== */
+function checkAdmin() {
+  const tg = window.Telegram?.WebApp;
+  if (tg?.initDataUnsafe?.user?.id) {
+    tg.ready();
+    if (ADMIN_IDS.includes(tg.initDataUnsafe.user.id)) return true;
+  }
+  return localStorage.getItem('auto_admin') === ADMIN_PASS;
+}
+
+if (checkAdmin()) {
+  const btn = document.getElementById('btnAdmin');
+  if (btn) btn.style.display = '';
+}
 
 /* ===== INIT ===== */
 loadCars();
