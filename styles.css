@@ -803,6 +803,67 @@ body.invert .card-chip:hover { border-color: rgba(0,0,0,.25); }
   filter: blur(0);
 }
 
+/* ===== TELEGRAM MINI APP ===== */
+body.tg-app .hero,
+body.tg-app .marquee,
+body.tg-app .about,
+body.tg-app .footer { display: none; }
+
+body.tg-app .nav { display: none; }
+
+body.tg-app .topbar { padding: 8px 14px; }
+
+body.tg-app .filters-bar { padding-top: 16px; }
+
+body.tg-app .section-head { margin-bottom: 14px; }
+body.tg-app .section-head h2 { font-size: 20px; }
+body.tg-app .kicker { margin-bottom: 6px; font-size: 10px; }
+
+body.tg-app .filters { gap: 6px; margin-top: 10px; }
+body.tg-app .chip { padding: 5px 12px; font-size: 11px; }
+
+body.tg-app .sort-bar { margin-top: 10px; padding-top: 10px; }
+
+body.tg-app .catalog { padding: 16px 14px 40px; }
+
+body.tg-app .grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+body.tg-app .card-info { padding: 10px 12px; }
+body.tg-app .card-title { font-size: 13px; }
+body.tg-app .card-desc { font-size: 11px; margin-bottom: 8px; -webkit-line-clamp: 1; }
+body.tg-app .card-chips { gap: 4px; }
+body.tg-app .card-chip { padding: 3px 7px; font-size: 10px; }
+body.tg-app .card-badge { font-size: 9px; padding: 2px 7px; top: 6px; left: 6px; }
+body.tg-app .card-price-tag { font-size: 11px; padding: 3px 8px; bottom: 6px; right: 6px; }
+
+/* bottom sheet modal in TG */
+body.tg-app .modal {
+  top: auto; left: 0; bottom: 0;
+  transform: translateY(100%);
+  width: 100%; max-width: 100%;
+  max-height: 92vh;
+  border-radius: 18px 18px 0 0;
+  padding: 20px 16px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+body.tg-app .modal.open { transform: translateY(0); }
+body.tg-app .modal-close { top: 10px; right: 10px; }
+body.tg-app .modal-title { font-size: 18px; }
+body.tg-app .modal-price { font-size: 16px; margin-bottom: 10px; }
+body.tg-app .modal-desc { font-size: 12px; margin-bottom: 12px; }
+body.tg-app .modal-specs { gap: 8px; margin-bottom: 16px; }
+body.tg-app .spec-item { padding: 8px 10px; }
+
+/* filter panel compact in TG */
+body.tg-app .filter-panel-inner { padding: 12px 0 4px; gap: 12px; }
+body.tg-app .filter-label { font-size: 9px; margin-bottom: 6px; }
+body.tg-app .filter-input { padding: 7px 10px; font-size: 12px; }
+body.tg-app .filter-range-row { flex-direction: row; }
+body.tg-app .filter-dash { display: block; }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 920px) {
   .hero { grid-template-columns: 1fr; text-align: center; }

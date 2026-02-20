@@ -1,3 +1,13 @@
+/* ===== TELEGRAM MINI APP ===== */
+(function() {
+  const tg = window.Telegram?.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    document.body.classList.add('tg-app');
+  }
+})();
+
 /* ===== CONFIG ===== */
 const DATA_URL = 'https://qzxoonsqalnjaqfrhhth.supabase.co/storage/v1/object/public/auto/cars.json';
 const TG_CHANNEL = 'https://t.me/auto_from_korea_test';
