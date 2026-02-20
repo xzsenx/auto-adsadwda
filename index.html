@@ -105,10 +105,34 @@
       <div class="filter-panel-inner">
         <div class="filter-group">
           <label class="filter-label">Марка</label>
-          <div class="filter-chips-row" id="brandChips">
-            <!-- filled by JS from loaded data -->
+          <div class="dropdown-select" id="brandDropdown">
+            <button class="dropdown-toggle" id="brandToggle" type="button">
+              <span class="dropdown-text">Все марки</span>
+              <span class="dropdown-arrow">▾</span>
+            </button>
+            <div class="dropdown-menu" id="brandMenu">
+              <div class="dropdown-search-wrap">
+                <input type="text" class="dropdown-search" id="brandSearch" placeholder="Поиск марки…" autocomplete="off">
+              </div>
+              <div class="dropdown-list" id="brandList">
+                <!-- filled by JS -->
+              </div>
+            </div>
           </div>
-          <div class="filter-chips-row model-chips-wrap" id="modelChips"></div>
+        </div>
+        <div class="filter-group" id="modelGroup" style="display:none">
+          <label class="filter-label">Модель</label>
+          <div class="dropdown-select" id="modelDropdown">
+            <button class="dropdown-toggle" id="modelToggle" type="button">
+              <span class="dropdown-text">Все модели</span>
+              <span class="dropdown-arrow">▾</span>
+            </button>
+            <div class="dropdown-menu" id="modelMenu">
+              <div class="dropdown-list" id="modelList">
+                <!-- filled by JS -->
+              </div>
+            </div>
+          </div>
         </div>
         <div class="filter-group">
           <label class="filter-label">Цена, ₽</label>

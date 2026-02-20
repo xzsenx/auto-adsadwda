@@ -93,44 +93,140 @@ async function loadCars() {
     console.warn('cars.json ошибка:', e);
     CARS = FALLBACK_CARS;
   }
-  buildBrandChips();
+  buildBrandDropdown();
   updateFavCount();
   renderCards();
   observeReveals();
 }
 
-/* ===== BRAND CHIPS (dynamic, popular first) ===== */
-function buildBrandChips() {
+/* ===== BRAND / MODEL DROPDOWN ===== */
+function getSortedBrands() {
   const allBrands = [...new Set(CARS.map(c => getBrand(c.title)))];
   const popular = POPULAR_BRANDS.filter(b => allBrands.includes(b));
   const rest = allBrands.filter(b => !POPULAR_BRANDS.includes(b)).sort();
-  const sorted = [...popular, ...rest];
-
-  const container = $('#brandChips');
-  container.innerHTML =
-    `<button class="chip small active" data-brand="all">Все</button>` +
-    sorted.map(b => `<button class="chip small" data-brand="${b}">${b}</button>`).join('');
+  return { popular, rest };
 }
 
-function buildModelChips() {
-  const container = $('#modelChips');
-  if (advancedFilters.brands.size === 0) { container.innerHTML = ''; return; }
+function brandCount(brand) {
+  return CARS.filter(c => getBrand(c.title) === brand).length;
+}
 
+function buildBrandDropdown() {
+  const { popular, rest } = getSortedBrands();
+  const list = $('#brandList');
+  let html = '';
+  popular.forEach(b => {
+    const sel = advancedFilters.brands.has(b) ? ' selected' : '';
+    html += `<div class="dropdown-item${sel}" data-brand-item="${b}"><span class="check-box">✓</span><span class="item-label">${b}</span><span class="item-count">${brandCount(b)}</span></div>`;
+  });
+  if (popular.length && rest.length) html += `<div class="dropdown-divider"></div>`;
+  rest.forEach(b => {
+    const sel = advancedFilters.brands.has(b) ? ' selected' : '';
+    html += `<div class="dropdown-item${sel}" data-brand-item="${b}"><span class="check-box">✓</span><span class="item-label">${b}</span><span class="item-count">${brandCount(b)}</span></div>`;
+  });
+  list.innerHTML = html;
+  updateBrandToggleText();
+}
+
+function updateBrandToggleText() {
+  const txt = $('#brandToggle .dropdown-text');
+  if (advancedFilters.brands.size === 0) { txt.textContent = 'Все марки'; return; }
+  if (advancedFilters.brands.size <= 2) { txt.textContent = [...advancedFilters.brands].join(', '); return; }
+  txt.textContent = [...advancedFilters.brands].slice(0, 2).join(', ') + ` +${advancedFilters.brands.size - 2}`;
+}
+
+function buildModelDropdown() {
+  const group = $('#modelGroup');
+  if (advancedFilters.brands.size === 0) { group.style.display = 'none'; return; }
+
+  const list = $('#modelList');
   let html = '';
   for (const brand of advancedFilters.brands) {
-    const models = [...new Set(CARS.filter(c => getBrand(c.title) === brand).map(c => getModel(c.title)))].sort();
-    if (models.length <= 1) continue;
+    const models = [...new Set(CARS.filter(c => getBrand(c.title) === brand).map(c => getModel(c.title)))].filter(Boolean).sort();
+    if (models.length === 0) continue;
+    // brand header
+    html += `<div class="dropdown-item" style="opacity:.5;pointer-events:none;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:6px 14px 2px">${brand}</div>`;
     const selModels = advancedFilters.models.get(brand);
-    html += `<div class="model-group" data-model-brand="${brand}">` +
-      `<span class="model-brand-label">${brand}:</span>` +
-      `<button class="chip small${!selModels ? ' active' : ''}" data-model="all" data-model-brand="${brand}">Все</button>` +
-      models.map(m =>
-        `<button class="chip small${selModels?.has(m) ? ' active' : ''}" data-model="${m}" data-model-brand="${brand}">${m}</button>`
-      ).join('') +
-      `</div>`;
+    models.forEach(m => {
+      const sel = selModels?.has(m) ? ' selected' : '';
+      const cnt = CARS.filter(c => getBrand(c.title) === brand && getModel(c.title) === m).length;
+      html += `<div class="dropdown-item${sel}" data-model-item="${m}" data-model-brand="${brand}"><span class="check-box">✓</span><span class="item-label">${m}</span><span class="item-count">${cnt}</span></div>`;
+    });
+    html += `<div class="dropdown-divider"></div>`;
   }
-  container.innerHTML = html;
+  list.innerHTML = html;
+  group.style.display = '';
+  updateModelToggleText();
 }
+
+function updateModelToggleText() {
+  const txt = $('#modelToggle .dropdown-text');
+  let total = 0;
+  const names = [];
+  for (const [, mset] of advancedFilters.models) total += mset.size;
+  if (total === 0) { txt.textContent = 'Все модели'; return; }
+  for (const [, mset] of advancedFilters.models) { for (const m of mset) names.push(m); }
+  if (names.length <= 2) { txt.textContent = names.join(', '); return; }
+  txt.textContent = names.slice(0, 2).join(', ') + ` +${names.length - 2}`;
+}
+
+/* dropdown open/close */
+function toggleDropdown(id) {
+  const dd = $('#' + id);
+  const isOpen = dd.classList.contains('open');
+  // close all
+  $$('.dropdown-select.open').forEach(d => d.classList.remove('open'));
+  if (!isOpen) dd.classList.add('open');
+}
+
+/* close dropdowns on outside click */
+document.addEventListener('mousedown', (e) => {
+  if (!e.target.closest('.dropdown-select')) {
+    $$('.dropdown-select.open').forEach(d => d.classList.remove('open'));
+  }
+});
+
+$('#brandToggle').addEventListener('click', () => toggleDropdown('brandDropdown'));
+$('#modelToggle').addEventListener('click', () => toggleDropdown('modelDropdown'));
+
+/* brand search */
+$('#brandSearch').addEventListener('input', (e) => {
+  const q = e.target.value.toLowerCase();
+  $$('#brandList .dropdown-item[data-brand-item]').forEach(el => {
+    el.style.display = el.dataset.brandItem.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+
+/* brand item click */
+$('#brandList').addEventListener('click', (e) => {
+  const item = e.target.closest('[data-brand-item]');
+  if (!item) return;
+  const b = item.dataset.brandItem;
+  if (advancedFilters.brands.has(b)) {
+    advancedFilters.brands.delete(b);
+    advancedFilters.models.delete(b);
+    item.classList.remove('selected');
+  } else {
+    advancedFilters.brands.add(b);
+    item.classList.add('selected');
+  }
+  updateBrandToggleText();
+  buildModelDropdown();
+});
+
+/* model item click */
+$('#modelList').addEventListener('click', (e) => {
+  const item = e.target.closest('[data-model-item]');
+  if (!item) return;
+  const brand = item.dataset.modelBrand;
+  const model = item.dataset.modelItem;
+  if (!advancedFilters.models.has(brand)) advancedFilters.models.set(brand, new Set());
+  const mset = advancedFilters.models.get(brand);
+  if (mset.has(model)) { mset.delete(model); item.classList.remove('selected'); }
+  else { mset.add(model); item.classList.add('selected'); }
+  if (mset.size === 0) advancedFilters.models.delete(brand);
+  updateModelToggleText();
+});
 
 /* ===== IMAGE HELPERS ===== */
 function carImage(car, size = 'card') {
@@ -419,8 +515,9 @@ function resetFilterPanel() {
   $('#hpMin').value = '';
   $('#hpMax').value = '';
   $$('[data-drive]').forEach(c => c.classList.toggle('active', c.dataset.drive === 'all'));
-  $$('[data-brand]').forEach(c => c.classList.toggle('active', c.dataset.brand === 'all'));
-  $('#modelChips').innerHTML = '';
+  buildBrandDropdown();
+  $('#modelGroup').style.display = 'none';
+  $('#modelList').innerHTML = '';
   renderCards();
 }
 
@@ -448,47 +545,6 @@ document.addEventListener('click', (e) => {
   // sort chips
   if (target.matches('.sort-chip[data-sort]')) {
     setSort(target.dataset.sort);
-    return;
-  }
-
-  // model filter chips
-  if (target.matches('[data-model]')) {
-    const brand = target.dataset.modelBrand;
-    const model = target.dataset.model;
-    if (model === 'all') {
-      advancedFilters.models.delete(brand);
-    } else {
-      if (!advancedFilters.models.has(brand)) advancedFilters.models.set(brand, new Set());
-      const mset = advancedFilters.models.get(brand);
-      if (mset.has(model)) mset.delete(model); else mset.add(model);
-      if (mset.size === 0) advancedFilters.models.delete(brand);
-    }
-    $$(`[data-model-brand="${brand}"] [data-model], [data-model][data-model-brand="${brand}"]`).forEach(c => {
-      if (c.dataset.model === 'all') c.classList.toggle('active', !advancedFilters.models.has(brand));
-      else c.classList.toggle('active', !!advancedFilters.models.get(brand)?.has(c.dataset.model));
-    });
-    return;
-  }
-
-  // brand filter chips in advanced panel (multi-select)
-  if (target.matches('[data-brand]')) {
-    const b = target.dataset.brand;
-    if (b === 'all') {
-      advancedFilters.brands.clear();
-      advancedFilters.models.clear();
-    } else {
-      if (advancedFilters.brands.has(b)) {
-        advancedFilters.brands.delete(b);
-        advancedFilters.models.delete(b);
-      } else {
-        advancedFilters.brands.add(b);
-      }
-    }
-    $$('[data-brand]').forEach(c => {
-      if (c.dataset.brand === 'all') c.classList.toggle('active', advancedFilters.brands.size === 0);
-      else c.classList.toggle('active', advancedFilters.brands.has(c.dataset.brand));
-    });
-    buildModelChips();
     return;
   }
 
