@@ -290,6 +290,7 @@ function renderCards() {
           ${carImage(car)}
           <span class="card-badge">${car.tag}</span>
           <span class="card-price-tag">${car.price}</span>
+          <button class="card-fav-btn${isFav ? ' active' : ''}" data-fav="${car.id}" title="В избранное">${isFav ? '♥' : '♡'}</button>
         </div>
         <div class="card-info">
           <div class="card-title">${car.title}</div>
@@ -298,7 +299,6 @@ function renderCards() {
             <span class="card-chip">${car.specs.year}</span>
             <span class="card-chip">${car.specs.km} км</span>
             <span class="card-chip">${car.specs.engine}</span>
-            <button class="card-chip fav-chip" data-fav="${car.id}" title="В избранное">${isFav ? '♥' : '♡'}</button>
           </div>
         </div>
       </div>`;
@@ -413,7 +413,12 @@ function toggleFav(carId) {
   else favorites.splice(idx, 1);
   localStorage.setItem('auto_favs', JSON.stringify(favorites));
   updateFavCount();
-  renderCards();
+  // update fav buttons without re-rendering
+  const isFav = favorites.includes(carId);
+  $$(`[data-fav="${carId}"]`).forEach(btn => {
+    btn.textContent = isFav ? '♥' : '♡';
+    btn.classList.toggle('active', isFav);
+  });
 }
 
 function updateFavCount() {
