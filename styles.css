@@ -133,6 +133,17 @@ body.invert .btn:hover { background: rgba(0,0,0,.12); border-color: rgba(0,0,0,.
   font-size: 11px; font-weight: 700;
 }
 
+/* ===== FAVORITES BUTTON ===== */
+#btnFav { position: relative; }
+#btnFav .pill {
+  position: absolute;
+  top: -4px; right: -4px;
+  min-width: 16px; height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 1;
+}
+
 /* ===== CHIPS (filters) ===== */
 .chip {
   padding: 7px 16px;
@@ -250,6 +261,12 @@ body.invert .chip:hover { border-color: rgba(0,0,0,.25); }
 .section-head h2 {
   font-size: 28px; font-weight: 700;
   letter-spacing: .06em; text-transform: uppercase;
+}
+.section-head-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 /* ===== FILTERS BAR ===== */
@@ -399,6 +416,21 @@ body.invert .dropdown-toggle:hover { border-color: rgba(0,0,0,.25); }
 
 .filter-toggle-btn.panel-open {
   background: var(--fg); color: var(--bg); border-color: var(--fg);
+}
+body.invert .filter-toggle-btn {
+  background: #fff;
+  border-color: rgba(0,0,0,.2);
+  color: #0b0b0b;
+}
+body.invert .filter-toggle-btn.panel-open {
+  background: #0b0b0b;
+  border-color: #0b0b0b;
+  color: #fff;
+}
+body.invert #btnApplyFilters {
+  background: #0b0b0b;
+  border-color: #0b0b0b;
+  color: #fff;
 }
 
 /* ===== CATALOG GRID ===== */
@@ -833,6 +865,7 @@ body.tg-app .filters-bar { padding-top: 16px; }
 body.tg-app .section-head { margin-bottom: 14px; }
 body.tg-app .section-head h2 { font-size: 20px; }
 body.tg-app .kicker { margin-bottom: 6px; font-size: 10px; }
+body.tg-app .section-head-row { align-items: center; }
 
 body.tg-app .filters { gap: 6px; margin-top: 10px; }
 body.tg-app .chip { padding: 5px 12px; font-size: 11px; }

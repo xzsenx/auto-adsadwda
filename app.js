@@ -51,7 +51,7 @@ let CARS = [];
 let favorites = JSON.parse(localStorage.getItem('auto_favs') || '[]');
 let currentFilter = 'all';
 let currentSort = 'default';
-let advancedFilters = { brands: new Set(), models: new Map(), priceMin: null, priceMax: null, yearMin: null, yearMax: null, kmMin: null, kmMax: null, hpMin: null, hpMax: null, drive: 'all' };
+let advancedFilters = { brands: new Set(), models: new Map(), priceMin: null, priceMax: null, yearMin: null, yearMax: null, kmMin: null, kmMax: null, hpMin: null, hpMax: null, drive: new Set() };
 let filterPanelOpen = false;
 
 /* ===== DOM ===== */
@@ -464,7 +464,7 @@ function applyAdvancedFilters(cars) {
     if (advancedFilters.kmMax !== null && km > advancedFilters.kmMax) return false;
     if (advancedFilters.hpMin !== null && hp > 0 && hp < advancedFilters.hpMin) return false;
     if (advancedFilters.hpMax !== null && hp > 0 && hp > advancedFilters.hpMax) return false;
-    if (advancedFilters.drive !== 'all' && drive !== advancedFilters.drive) return false;
+    if (advancedFilters.drive.size > 0 && !advancedFilters.drive.has(drive)) return false;
     return true;
   });
 }
@@ -520,7 +520,7 @@ function applyFilterPanel() {
 }
 
 function resetFilterPanel() {
-  advancedFilters = { brands: new Set(), models: new Map(), priceMin: null, priceMax: null, yearMin: null, yearMax: null, kmMin: null, kmMax: null, hpMin: null, hpMax: null, drive: 'all' };
+  advancedFilters = { brands: new Set(), models: new Map(), priceMin: null, priceMax: null, yearMin: null, yearMax: null, kmMin: null, kmMax: null, hpMin: null, hpMax: null, drive: new Set() };
   $('#priceMin').value = '';
   $('#priceMax').value = '';
   $('#yearMin').value = '';
@@ -565,8 +565,18 @@ document.addEventListener('click', (e) => {
 
   // drive filter chips in advanced panel
   if (target.matches('[data-drive]')) {
-    advancedFilters.drive = target.dataset.drive;
-    $$('[data-drive]').forEach(c => c.classList.toggle('active', c.dataset.drive === advancedFilters.drive));
+    const drive = target.dataset.drive;
+    if (drive === 'all') {
+      advancedFilters.drive.clear();
+    } else {
+      if (advancedFilters.drive.has(drive)) advancedFilters.drive.delete(drive);
+      else advancedFilters.drive.add(drive);
+    }
+    const hasAny = advancedFilters.drive.size > 0;
+    $$('[data-drive]').forEach(c => {
+      if (c.dataset.drive === 'all') c.classList.toggle('active', !hasAny);
+      else c.classList.toggle('active', advancedFilters.drive.has(c.dataset.drive));
+    });
     return;
   }
 

@@ -71,21 +71,12 @@
 <!-- filters -->
 <section class="filters-bar" id="catalog">
   <div class="container">
-    <div class="section-head">
-      <p class="kicker">КАТАЛОГ</p>
-      <h2>Актуальные авто</h2>
-    </div>
-    <div class="filters">
-      <button class="chip active" data-filter="all">Все</button>
-      <button class="chip" data-filter="sedan">Седан</button>
-      <button class="chip" data-filter="suv">Кроссовер</button>
-      <button class="chip" data-filter="sport">Спорт</button>
-      <button class="chip" data-filter="business">Бизнес</button>
-      <button class="chip" data-filter="hatchback">Хэтчбек</button>
-      <button class="chip" data-filter="wagon">Универсал</button>
-      <button class="chip" data-filter="minivan">Минивэн</button>
-      <button class="chip" data-filter="pickup">Пикап</button>
-      <button class="chip" data-filter="electric">Электро</button>
+    <div class="section-head section-head-row">
+      <div>
+        <p class="kicker">КАТАЛОГ</p>
+        <h2>Актуальные авто</h2>
+      </div>
+      <button class="btn btn-icon filter-toggle-btn" id="btnFilterPanel" aria-label="Фильтры">☰</button>
     </div>
 
     <!-- sort & filter controls -->
@@ -97,7 +88,6 @@
         <button class="sort-chip" data-sort="year-desc">Новее</button>
         <button class="sort-chip" data-sort="km-asc">Пробег ↑</button>
       </div>
-      <button class="btn btn-icon filter-toggle-btn" id="btnFilterPanel" aria-label="Фильтры">☰</button>
     </div>
 
     <!-- advanced filter panel (collapsed) -->
@@ -132,6 +122,21 @@
                 <!-- filled by JS -->
               </div>
             </div>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Категория</label>
+          <div class="filter-chips-row">
+            <button class="chip small active" data-filter="all">Все</button>
+            <button class="chip small" data-filter="sedan">Седан</button>
+            <button class="chip small" data-filter="suv">Кроссовер</button>
+            <button class="chip small" data-filter="sport">Спорт</button>
+            <button class="chip small" data-filter="business">Бизнес</button>
+            <button class="chip small" data-filter="hatchback">Хэтчбек</button>
+            <button class="chip small" data-filter="wagon">Универсал</button>
+            <button class="chip small" data-filter="minivan">Минивэн</button>
+            <button class="chip small" data-filter="pickup">Пикап</button>
+            <button class="chip small" data-filter="electric">Электро</button>
           </div>
         </div>
         <div class="filter-group">
