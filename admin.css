@@ -61,6 +61,14 @@
   font-size: 1.3rem;
   font-weight: 700;
 }
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+#btnImportLabel {
+  cursor: pointer;
+}
 
 /* ===== ADMIN LIST ===== */
 .admin-list {

@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="admin.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -41,7 +42,13 @@
     <!-- toolbar -->
     <div class="admin-toolbar">
       <h2>Объявления <span class="pill" id="carsCount">0</span></h2>
-      <button class="btn btn-primary" id="btnAddCar">+ Добавить</button>
+      <div class="toolbar-actions">
+        <button class="btn btn-sm" id="btnExport">↓ Excel</button>
+        <label class="btn btn-sm" id="btnImportLabel">↑ Excel
+          <input type="file" id="btnImport" accept=".xlsx,.xls" style="display:none">
+        </label>
+        <button class="btn btn-primary" id="btnAddCar">+ Добавить</button>
+      </div>
     </div>
 
     <!-- car list -->

@@ -333,7 +333,89 @@ function generateId(title) {
   return slug + '-' + Date.now().toString(36);
 }
 
+/* ===== EXCEL EXPORT ===== */
+function exportExcel() {
+  const rows = cars.map(c => ({
+    'ID': c.id,
+    'Название': c.title,
+    'Цена': c.price,
+    'Тег': c.tag,
+    'Категория': c.category,
+    'Год': c.specs?.year || '',
+    'Пробег': c.specs?.km || '',
+    'Двигатель': c.specs?.engine || '',
+    'Привод': c.specs?.drive || '',
+    'Описание': c.desc,
+    'Фото': (c.images || []).join(', '),
+    'message_id': c.message_id || ''
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  // auto column widths
+  ws['!cols'] = [
+    {wch:25},{wch:25},{wch:16},{wch:12},{wch:12},
+    {wch:6},{wch:10},{wch:14},{wch:10},{wch:50},{wch:60},{wch:10}
+  ];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Авто');
+  XLSX.writeFile(wb, `auto_export_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+/* ===== EXCEL IMPORT ===== */
+async function importExcel(file) {
+  const data = await file.arrayBuffer();
+  const wb = XLSX.read(data);
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws);
+
+  if (!rows.length) { alert('Файл пустой'); return; }
+
+  const imported = rows.map(r => ({
+    id: String(r['ID'] || r['id'] || generateId(r['Название'] || r['title'] || 'car')),
+    title: r['Название'] || r['title'] || '',
+    price: r['Цена'] || r['price'] || '',
+    tag: r['Тег'] || r['tag'] || 'SEDAN',
+    category: r['Категория'] || r['category'] || 'sedan',
+    images: (r['Фото'] || r['images'] || '').split(',').map(s => s.trim()).filter(Boolean),
+    desc: r['Описание'] || r['desc'] || '',
+    message_id: r['message_id'] || undefined,
+    specs: {
+      year: String(r['Год'] || r['year'] || ''),
+      km: String(r['Пробег'] || r['km'] || ''),
+      engine: r['Двигатель'] || r['engine'] || '',
+      drive: r['Привод'] || r['drive'] || ''
+    }
+  })).filter(c => c.title);
+
+  const mode = confirm(
+    `Найдено ${imported.length} авто.\n\nОК = Заменить все данные\nОтмена = Добавить к существующим`
+  );
+
+  if (mode) {
+    // replace
+    cars = imported;
+  } else {
+    // merge — update existing by id, add new
+    for (const imp of imported) {
+      const idx = cars.findIndex(c => c.id === imp.id);
+      if (idx !== -1) cars[idx] = imp;
+      else cars.push(imp);
+    }
+  }
+
+  await saveCars();
+  renderList();
+  alert(`Импортировано: ${imported.length} авто`);
+}
+
 /* ===== EVENT LISTENERS ===== */
+
+// export / import
+$('#btnExport').addEventListener('click', exportExcel);
+$('#btnImport').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) importExcel(file);
+  e.target.value = '';
+});
 
 // add car button
 $('#btnAddCar').addEventListener('click', () => openEdit(null));
