@@ -1,12 +1,12 @@
 /* ===== VARIABLES ===== */
 :root {
-  --bg: #0b0b0b;
-  --fg: #f3f3f3;
-  --muted: rgba(243,243,243,.6);
-  --line: rgba(243,243,243,.12);
-  --card: rgba(255,255,255,.04);
-  --card-hover: rgba(255,255,255,.07);
-  --shadow: 0 16px 60px rgba(0,0,0,.55);
+  --bg: #151617;
+  --fg: #e7e7e7;
+  --muted: rgba(231,231,231,.62);
+  --line: rgba(231,231,231,.14);
+  --card: rgba(255,255,255,.06);
+  --card-hover: rgba(255,255,255,.1);
+  --shadow: 0 16px 60px rgba(0,0,0,.45);
   --radius: 14px;
   --font: 'Inter', system-ui, sans-serif;
 }
@@ -667,14 +667,14 @@ body.invert .card-chip:hover { border-color: rgba(0,0,0,.25); }
 
 .modal-close { position: absolute; top: 14px; right: 14px; z-index: 1; }
 .modal-close {
-  background: rgba(0,0,0,.55);
+  background: #0b0b0b;
   color: #fff;
-  border: 1px solid rgba(255,255,255,.2);
+  border: 1px solid #0b0b0b;
 }
 body.invert .modal-close {
-  background: rgba(0,0,0,.1);
+  background: #fff;
   color: #0b0b0b;
-  border-color: rgba(0,0,0,.2);
+  border-color: #0b0b0b;
 }
 
 .modal-media {
