@@ -625,6 +625,27 @@ $('#btnClearFav').addEventListener('click', clearFavs);
 $('#modalClose').addEventListener('click', closeModal);
 $('#modalBackdrop').addEventListener('click', closeModal);
 
+// iOS-style back swipe from left edge (TG mini app)
+let edgeSwipeStartX = 0;
+let edgeSwipeStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  if (!document.body.classList.contains('tg-app')) return;
+  const t = e.touches[0];
+  edgeSwipeStartX = t.clientX;
+  edgeSwipeStartY = t.clientY;
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  if (!document.body.classList.contains('tg-app')) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - edgeSwipeStartX;
+  const dy = Math.abs(t.clientY - edgeSwipeStartY);
+  if (edgeSwipeStartX <= 18 && dx > 80 && dx > dy) {
+    if (modal.classList.contains('open')) closeModal();
+    if (drawer.classList.contains('open')) closeDrawer();
+    if (filterPanelOpen) toggleFilterPanel();
+  }
+}, { passive: true });
+
 // filter panel
 btnFilterPanel.addEventListener('click', toggleFilterPanel);
 $('#btnApplyFilters').addEventListener('click', applyFilterPanel);

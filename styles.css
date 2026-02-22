@@ -336,7 +336,7 @@ body.invert .sort-chip:hover { border-color: rgba(0,0,0,.25); }
 }
 .filter-range-row { display: flex; align-items: center; gap: 10px; }
 .filter-input {
-  flex: 1; padding: 8px 12px;
+  flex: 1 1 0; min-width: 0; padding: 8px 12px;
   border: 1px solid var(--line); border-radius: 10px;
   background: var(--card); color: var(--fg);
   font-family: var(--font); font-size: 13px; font-weight: 500;
@@ -666,6 +666,16 @@ body.invert .card-chip:hover { border-color: rgba(0,0,0,.25); }
 .modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
 
 .modal-close { position: absolute; top: 14px; right: 14px; z-index: 1; }
+.modal-close {
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.2);
+}
+body.invert .modal-close {
+  background: rgba(0,0,0,.1);
+  color: #0b0b0b;
+  border-color: rgba(0,0,0,.2);
+}
 
 .modal-media {
   aspect-ratio: 4/3;
@@ -911,6 +921,7 @@ body.tg-app .filter-label { font-size: 9px; margin-bottom: 6px; }
 body.tg-app .filter-input { padding: 7px 10px; font-size: 12px; }
 body.tg-app .filter-range-row { flex-direction: row; }
 body.tg-app .filter-dash { display: block; }
+body.tg-app .filter-range-row .filter-input { width: 100%; }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 920px) {
