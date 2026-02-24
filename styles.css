@@ -548,19 +548,22 @@ body.invert #btnApplyFilters {
 }
 
 .card-chips {
-  display: flex; gap: 8px; flex-wrap: wrap;
+  display: flex; gap: 6px; flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 .card-chip {
-  padding: 4px 10px;
+  padding: 3px 8px;
   border: none;
   border-radius: 999px;
-  font-size: 11px; font-weight: 500;
+  font-size: clamp(9px, 2.5vw, 11px); font-weight: 500;
   color: var(--muted);
   background: rgba(255,255,255,.06);
   font-family: var(--font);
   cursor: default;
   transition: all .2s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 body.invert .card-chip { background: rgba(0,0,0,.06); }
 
@@ -579,7 +582,7 @@ body.invert .card-chip { background: rgba(0,0,0,.06); }
   transition: all .2s;
 }
 .card-fav-btn:hover { background: rgba(0,0,0,.7); color: #fff; }
-.card-fav-btn.active { color: #ff4466; background: rgba(0,0,0,.6); }
+.card-fav-btn.active { color: #fff; background: rgba(0,0,0,.6); }
 
 /* ===== ABOUT ===== */
 .about {
@@ -659,17 +662,25 @@ body.invert .card-chip { background: rgba(0,0,0,.06); }
 }
 .modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
 
-.modal-close { position: absolute; top: 14px; right: 14px; z-index: 1; }
 .modal-close {
-  background: #0b0b0b;
+  position: absolute; top: 12px; right: 12px; z-index: 4;
+  width: 32px; height: 32px; padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(8px);
   color: #fff;
-  border: 1px solid #0b0b0b;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background .2s;
 }
+.modal-close:hover { background: rgba(0,0,0,.7); }
 body.invert .modal-close {
-  background: #fff;
+  background: rgba(0,0,0,.12);
   color: #0b0b0b;
-  border-color: #0b0b0b;
 }
+body.invert .modal-close:hover { background: rgba(0,0,0,.2); }
 
 .modal-media {
   aspect-ratio: 4/3;
@@ -867,7 +878,10 @@ body.tg-app .footer { display: none; }
 
 body.tg-app .nav { display: none; }
 
-body.tg-app .topbar { padding: 8px 14px; }
+body.tg-app .topbar {
+  padding: 8px 14px;
+  padding-top: calc(8px + var(--tg-safe-top, env(safe-area-inset-top, 0px)));
+}
 
 body.tg-app .filters-bar { padding-top: 16px; }
 
@@ -885,16 +899,16 @@ body.tg-app .catalog { padding: 16px 14px 40px; }
 
 body.tg-app .grid {
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: clamp(6px, 2vw, 12px);
 }
 
-body.tg-app .card-info { padding: 10px 12px; }
-body.tg-app .card-title { font-size: 13px; }
-body.tg-app .card-desc { font-size: 11px; margin-bottom: 8px; -webkit-line-clamp: 1; }
+body.tg-app .card-info { padding: 8px 10px; }
+body.tg-app .card-title { font-size: clamp(12px, 3.2vw, 14px); }
+body.tg-app .card-desc { font-size: clamp(10px, 2.6vw, 12px); margin-bottom: 6px; -webkit-line-clamp: 1; }
 body.tg-app .card-chips { gap: 4px; }
-body.tg-app .card-chip { padding: 3px 7px; font-size: 10px; }
-body.tg-app .card-badge { font-size: 9px; padding: 2px 7px; top: 6px; left: 6px; }
-body.tg-app .card-price-tag { font-size: 11px; padding: 3px 8px; bottom: 6px; right: 6px; }
+body.tg-app .card-chip { padding: 2px 6px; font-size: clamp(8px, 2.2vw, 10px); }
+body.tg-app .card-badge { font-size: clamp(8px, 2.2vw, 10px); padding: 2px 7px; top: 6px; left: 6px; }
+body.tg-app .card-price-tag { font-size: clamp(10px, 2.8vw, 12px); padding: 3px 8px; bottom: 6px; right: 6px; }
 
 /* bottom sheet modal in TG */
 body.tg-app .modal {
@@ -907,7 +921,7 @@ body.tg-app .modal {
   padding-bottom: calc(20px + env(safe-area-inset-bottom));
 }
 body.tg-app .modal.open { transform: translateY(0); }
-body.tg-app .modal-close { top: 10px; right: 10px; }
+body.tg-app .modal-close { top: 10px; right: 10px; width: 30px; height: 30px; font-size: 13px; }
 body.tg-app .modal-title { font-size: 18px; }
 body.tg-app .modal-price { font-size: 16px; margin-bottom: 10px; }
 body.tg-app .modal-desc { font-size: 12px; margin-bottom: 12px; }

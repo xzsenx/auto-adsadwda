@@ -4,7 +4,16 @@
   if (tg) {
     tg.ready();
     tg.expand();
+    if (tg.requestFullscreen) tg.requestFullscreen();
     document.body.classList.add('tg-app');
+    // set safe-area CSS vars from TG
+    const root = document.documentElement;
+    function updateSafeArea() {
+      const top = tg.safeAreaInset?.top || tg.contentSafeAreaInset?.top || 0;
+      root.style.setProperty('--tg-safe-top', top + 'px');
+    }
+    updateSafeArea();
+    tg.onEvent?.('viewportChanged', updateSafeArea);
   }
 })();
 
