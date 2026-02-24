@@ -23,7 +23,7 @@
   </nav>
   <div class="topbar-actions">
     <a href="admin.html" class="btn btn-sm" id="btnAdmin" style="display:none">Admin</a>
-    <button class="btn btn-sm" id="btnInvert">Invert</button>
+    <button class="btn btn-sm" id="btnInvert">Тема</button>
     <button class="btn btn-icon" id="btnFav" aria-label="Избранное">
       ♡ <span class="pill" id="favCount">0</span>
     </button>
@@ -118,6 +118,9 @@
               <span class="dropdown-arrow">▾</span>
             </button>
             <div class="dropdown-menu" id="modelMenu">
+              <div class="dropdown-search-wrap">
+                <input type="text" class="dropdown-search" id="modelSearch" placeholder="Поиск модели…" autocomplete="off">
+              </div>
               <div class="dropdown-list" id="modelList">
                 <!-- filled by JS -->
               </div>

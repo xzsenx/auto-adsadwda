@@ -92,6 +92,21 @@ function getModel(title) {
 
 const POPULAR_BRANDS = ['BMW','Mercedes-Benz','Toyota','Hyundai','Kia','Audi','Volkswagen','Lexus','Mazda','Porsche','Nissan','Honda'];
 
+/* ===== TAG RU MAP ===== */
+const TAG_RU = {
+  'SEDAN': 'Седан', 'SUV': 'Кроссовер', 'SPORT': 'Спорт', 'BUSINESS': 'Бизнес',
+  'HATCHBACK': 'Хэтчбек', 'WAGON': 'Универсал', 'MINIVAN': 'Минивэн', 'PICKUP': 'Пикап',
+  'ELECTRIC': 'Электро', 'LIMITED': 'Лимитед', 'NEW': 'Новинка'
+};
+function tagRu(tag) { return TAG_RU[tag] || TAG_RU[tag?.toUpperCase()] || tag; }
+
+/* ===== FORMAT PRICE ===== */
+function formatPrice(raw) {
+  const num = parseInt(String(raw).replace(/[^0-9]/g, ''), 10);
+  if (!num) return raw;
+  return num.toLocaleString('ru-RU').replace(/,/g, ' ') + ' ₽';
+}
+
 /* ===== LOAD DATA ===== */
 async function loadCars() {
   try {
@@ -207,6 +222,24 @@ $('#brandSearch').addEventListener('input', (e) => {
   });
 });
 
+/* model search */
+$('#modelSearch').addEventListener('input', (e) => {
+  const q = e.target.value.toLowerCase();
+  $$('#modelList .dropdown-item[data-model-item]').forEach(el => {
+    el.style.display = el.dataset.modelItem.toLowerCase().includes(q) ? '' : 'none';
+  });
+  // hide brand headers with no visible models
+  $$('#modelList .dropdown-item:not([data-model-item])').forEach(header => {
+    let next = header.nextElementSibling;
+    let anyVisible = false;
+    while (next && next.dataset.modelItem) {
+      if (next.style.display !== 'none') anyVisible = true;
+      next = next.nextElementSibling;
+    }
+    header.style.display = anyVisible ? '' : 'none';
+  });
+});
+
 /* brand item click */
 $('#brandList').addEventListener('click', (e) => {
   const item = e.target.closest('[data-brand-item]');
@@ -222,6 +255,7 @@ $('#brandList').addEventListener('click', (e) => {
   }
   updateBrandToggleText();
   buildModelDropdown();
+  pulseApply();
 });
 
 /* model item click */
@@ -236,6 +270,7 @@ $('#modelList').addEventListener('click', (e) => {
   else { mset.add(model); item.classList.add('selected'); }
   if (mset.size === 0) advancedFilters.models.delete(brand);
   updateModelToggleText();
+  pulseApply();
 });
 
 /* ===== IMAGE HELPERS ===== */
@@ -288,8 +323,8 @@ function renderCards() {
       <div class="car-card reveal" data-id="${car.id}">
         <div class="card-media" data-open="modal">
           ${carImage(car)}
-          <span class="card-badge">${car.tag}</span>
-          <span class="card-price-tag">${car.price}</span>
+          <span class="card-badge">${tagRu(car.tag)}</span>
+          <span class="card-price-tag">${formatPrice(car.price)}</span>
           <button class="card-fav-btn${isFav ? ' active' : ''}" data-fav="${car.id}" title="В избранное">${isFav ? '♥' : '♡'}</button>
         </div>
         <div class="card-info">
@@ -319,7 +354,7 @@ function openModal(carId) {
       ${carGallery(car)}
     </div>
     <div class="modal-title">${car.title}</div>
-    <div class="modal-price">${car.price}</div>
+    <div class="modal-price">${formatPrice(car.price)}</div>
     <div class="modal-desc">${car.desc}</div>
     <div class="modal-specs">
       <div class="spec-item"><div class="spec-label">Год</div><div class="spec-val">${car.specs.year}</div></div>
@@ -399,7 +434,7 @@ function renderDrawer() {
         ${thumb}
         <div class="drawer-item-info">
           <div class="drawer-item-title">${car.title}</div>
-          <div class="drawer-item-price">${car.price}</div>
+          <div class="drawer-item-price">${formatPrice(car.price)}</div>
         </div>
         <button class="drawer-item-remove" data-remove="${car.id}" title="Убрать">✕</button>
       </div>`;
@@ -485,6 +520,22 @@ function setSort(sort) {
   $$('.sort-chip').forEach(c => c.classList.toggle('active', c.dataset.sort === sort));
   renderCards();
 }
+
+/* ===== DYNAMIC APPLY BUTTON ===== */
+function pulseApply() {
+  const btn = $('#btnApplyFilters');
+  if (!btn) return;
+  btn.classList.remove('pulse');
+  void btn.offsetWidth; // reflow
+  btn.classList.add('pulse');
+}
+
+// pulse on filter inputs change
+document.addEventListener('input', (e) => {
+  if (e.target.matches('#priceMin,#priceMax,#yearMin,#yearMax,#kmMin,#kmMax,#hpMin,#hpMax')) {
+    pulseApply();
+  }
+});
 
 /* ===== FILTER PANEL ===== */
 const filterPanel = $('#filterPanel');
@@ -577,6 +628,7 @@ document.addEventListener('click', (e) => {
       if (c.dataset.drive === 'all') c.classList.toggle('active', !hasAny);
       else c.classList.toggle('active', advancedFilters.drive.has(c.dataset.drive));
     });
+    pulseApply();
     return;
   }
 
