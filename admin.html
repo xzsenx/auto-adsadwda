@@ -39,21 +39,64 @@
 <section class="admin-panel" id="adminPanel" style="display:none">
   <div class="container">
 
-    <!-- toolbar -->
-    <div class="admin-toolbar">
-      <h2>Объявления <span class="pill" id="carsCount">0</span></h2>
-      <div class="toolbar-actions">
-        <button class="btn btn-sm" id="btnExport">↓ Excel</button>
-        <label class="btn btn-sm" id="btnImportLabel">↑ Excel
-          <input type="file" id="btnImport" accept=".xlsx,.xls" style="display:none">
-        </label>
-        <button class="btn btn-primary" id="btnAddCar">+ Добавить</button>
+    <!-- tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="cars">Объявления</button>
+      <button class="admin-tab" data-tab="stats">Статистика</button>
+    </div>
+
+    <!-- TAB: cars -->
+    <div class="admin-tab-content" id="tabCars">
+      <div class="admin-toolbar">
+        <h2>Объявления <span class="pill" id="carsCount">0</span></h2>
+        <div class="toolbar-actions">
+          <button class="btn btn-sm" id="btnExport">↓ Excel</button>
+          <label class="btn btn-sm" id="btnImportLabel">↑ Excel
+            <input type="file" id="btnImport" accept=".xlsx,.xls" style="display:none">
+          </label>
+          <button class="btn btn-primary" id="btnAddCar">+ Добавить</button>
+        </div>
+      </div>
+      <div class="admin-list" id="adminList">
+        <!-- filled by JS -->
       </div>
     </div>
 
-    <!-- car list -->
-    <div class="admin-list" id="adminList">
-      <!-- filled by JS -->
+    <!-- TAB: stats -->
+    <div class="admin-tab-content" id="tabStats" style="display:none">
+      <div class="admin-toolbar">
+        <h2>Статистика</h2>
+        <button class="btn btn-sm" id="btnRefreshStats">↻ Обновить</button>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="stats-kpi-row" id="statsKpi">
+        <!-- filled by JS -->
+      </div>
+
+      <!-- views chart -->
+      <div class="stats-section">
+        <h3 class="stats-title">Просмотры за 14 дней</h3>
+        <div class="stats-chart" id="statsChart"></div>
+      </div>
+
+      <!-- popular cars -->
+      <div class="stats-section">
+        <h3 class="stats-title">Популярные авто (по просмотрам)</h3>
+        <div class="stats-table" id="statsPopular"></div>
+      </div>
+
+      <!-- favorites -->
+      <div class="stats-section">
+        <h3 class="stats-title">Чаще добавляют в избранное</h3>
+        <div class="stats-table" id="statsFavs"></div>
+      </div>
+
+      <!-- sessions -->
+      <div class="stats-section">
+        <h3 class="stats-title">Последние посещения</h3>
+        <div class="stats-table" id="statsSessions"></div>
+      </div>
     </div>
 
   </div>

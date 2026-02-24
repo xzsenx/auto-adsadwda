@@ -348,7 +348,13 @@ body.invert .sort-chip:hover { background: rgba(0,0,0,.06); }
 .filter-input::placeholder { color: var(--muted); }
 .filter-input:focus { border-color: var(--fg); }
 .filter-dash { color: var(--muted); font-size: 14px; flex-shrink: 0; }
-.filter-chips-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-chips-row {
+  display: flex; gap: 8px; flex-wrap: nowrap;
+  overflow-x: auto; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+.filter-chips-row::-webkit-scrollbar { display: none; }
 .chip.small { padding: 4px 12px; font-size: 11px; }
 .filter-actions {
   display: flex; gap: 10px; padding-top: 6px;
@@ -479,34 +485,7 @@ body.invert #btnApplyFilters {
   justify-content: center;
 }
 
-/* scanline hover */
-.card-media::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, transparent 40%, rgba(255,255,255,.06) 50%, transparent 60%);
-  background-size: 100% 200%;
-  opacity: 0;
-  transition: opacity .3s;
-}
-.car-card:hover .card-media::after {
-  opacity: 1;
-  animation: scanline 1.2s ease-in-out infinite;
-}
-
-@keyframes scanline {
-  0% { background-position: 0 -100% }
-  100% { background-position: 0 200% }
-}
-
-/* film frame borders */
-.card-media::before {
-  content: '';
-  position: absolute; inset: 6px;
-  border: 1px dashed rgba(255,255,255,.1);
-  border-radius: 6px;
-  pointer-events: none;
-  z-index: 1;
-}
+/* clean card media — no scanline or dashed overlays */
 
 /* real photos */
 .card-media .car-img {
@@ -700,7 +679,6 @@ body.invert .modal-close {
   margin-bottom: 20px;
   position: relative;
   overflow: hidden;
-  border: 1px dashed var(--line);
 }
 
 /* modal images */
@@ -811,7 +789,13 @@ body.invert .modal-close {
   display: flex; align-items: center; gap: 14px;
   padding: 12px 0;
   border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: background .15s;
+  border-radius: 8px;
+  padding: 12px 8px;
+  margin: 0 -8px;
 }
+.drawer-item:hover { background: var(--card-hover); }
 
 /* drawer thumbnails */
 .drawer-item-thumb {

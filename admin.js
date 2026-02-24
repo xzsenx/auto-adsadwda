@@ -407,6 +407,173 @@ async function importExcel(file) {
   alert(`Импортировано: ${imported.length} авто`);
 }
 
+/* ===== ADMIN TABS ===== */
+$$('.admin-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('.admin-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const which = tab.dataset.tab;
+    $('#tabCars').style.display = which === 'cars' ? '' : 'none';
+    $('#tabStats').style.display = which === 'stats' ? '' : 'none';
+    if (which === 'stats') loadStats();
+  });
+});
+
+/* ===== ANALYTICS / STATS ===== */
+const ANALYTICS_PATH = `${BUCKET}/analytics.json`;
+let analytics = null;
+
+async function loadStats() {
+  const kpi = $('#statsKpi');
+  kpi.innerHTML = '<div class="stats-empty">Загрузка…</div>';
+  try {
+    const r = await fetch(`${SB_URL}/storage/v1/object/public/${ANALYTICS_PATH}?t=${Date.now()}`);
+    if (r.ok) analytics = await r.json();
+  } catch(e) {
+    console.warn('loadStats:', e);
+  }
+  if (!analytics) {
+    kpi.innerHTML = '<div class="stats-empty">Нет данных аналитики</div>';
+    return;
+  }
+  renderStats();
+}
+
+function renderStats() {
+  if (!analytics) return;
+  const d = analytics;
+
+  // KPI
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const todayViews = d.dailyViews?.[today] || 0;
+  const yesterdayViews = d.dailyViews?.[yesterday] || 0;
+  const totalCarViews = Object.values(d.carViews || {}).reduce((a, b) => a + b, 0);
+  const totalFavs = Object.values(d.carFavs || {}).reduce((a, b) => a + b, 0);
+  const sessionsToday = (d.sessions || []).filter(s => s.date === today).length;
+  const tgSessions = (d.sessions || []).filter(s => s.tg).length;
+  const webSessions = (d.sessions || []).filter(s => !s.tg).length;
+
+  $('#statsKpi').innerHTML = `
+    <div class="stats-kpi">
+      <div class="stats-kpi-val">${d.totalViews || 0}</div>
+      <div class="stats-kpi-label">Всего посещений</div>
+    </div>
+    <div class="stats-kpi">
+      <div class="stats-kpi-val">${todayViews}</div>
+      <div class="stats-kpi-label">Сегодня</div>
+    </div>
+    <div class="stats-kpi">
+      <div class="stats-kpi-val">${yesterdayViews}</div>
+      <div class="stats-kpi-label">Вчера</div>
+    </div>
+    <div class="stats-kpi">
+      <div class="stats-kpi-val">${totalCarViews}</div>
+      <div class="stats-kpi-label">Просмотров авто</div>
+    </div>
+    <div class="stats-kpi">
+      <div class="stats-kpi-val">${totalFavs}</div>
+      <div class="stats-kpi-label">Добавлений в ❤</div>
+    </div>
+    <div class="stats-kpi">
+      <div class="stats-kpi-val">${tgSessions} / ${webSessions}</div>
+      <div class="stats-kpi-label">TG / Web</div>
+    </div>
+  `;
+
+  // daily chart (last 14 days)
+  renderDailyChart(d.dailyViews || {});
+
+  // popular cars
+  renderPopularCars(d.carViews || {});
+
+  // favorite stats
+  renderFavStats(d.carFavs || {});
+
+  // sessions
+  renderSessions(d.sessions || []);
+}
+
+function renderDailyChart(dailyViews) {
+  const chart = $('#statsChart');
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const date = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    days.push({ date, views: dailyViews[date] || 0 });
+  }
+  const maxV = Math.max(...days.map(d => d.views), 1);
+
+  chart.innerHTML = days.map(d => {
+    const h = Math.max((d.views / maxV) * 110, 2);
+    const short = d.date.slice(5); // MM-DD
+    return `<div class="stats-bar-col">
+      <div class="stats-bar-val">${d.views || ''}</div>
+      <div class="stats-bar" style="height:${h}px"></div>
+      <div class="stats-bar-label">${short}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderPopularCars(carViews) {
+  const el = $('#statsPopular');
+  const sorted = Object.entries(carViews).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  if (!sorted.length) { el.innerHTML = '<div class="stats-empty">Нет данных</div>'; return; }
+  const maxV = sorted[0][1];
+
+  el.innerHTML = sorted.map(([id, views], i) => {
+    const car = cars.find(c => c.id === id);
+    const name = car ? car.title : id;
+    const pct = (views / maxV * 100).toFixed(0);
+    return `<div class="stats-row">
+      <span class="stats-row-rank">${i + 1}</span>
+      <span class="stats-row-name">${name}</span>
+      <div class="stats-row-bar"><div class="stats-row-bar-fill" style="width:${pct}%"></div></div>
+      <span class="stats-row-val">${views}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderFavStats(carFavs) {
+  const el = $('#statsFavs');
+  const sorted = Object.entries(carFavs).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  if (!sorted.length) { el.innerHTML = '<div class="stats-empty">Нет данных</div>'; return; }
+  const maxV = sorted[0][1];
+
+  el.innerHTML = sorted.map(([id, cnt], i) => {
+    const car = cars.find(c => c.id === id);
+    const name = car ? car.title : id;
+    const pct = (cnt / maxV * 100).toFixed(0);
+    return `<div class="stats-row">
+      <span class="stats-row-rank">${i + 1}</span>
+      <span class="stats-row-name">${name}</span>
+      <div class="stats-row-bar"><div class="stats-row-bar-fill" style="width:${pct}%"></div></div>
+      <span class="stats-row-val">${cnt}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderSessions(sessions) {
+  const el = $('#statsSessions');
+  const recent = [...sessions].reverse().slice(0, 30);
+  if (!recent.length) { el.innerHTML = '<div class="stats-empty">Нет данных</div>'; return; }
+
+  el.innerHTML = recent.map(s => {
+    const dt = new Date(s.ts);
+    const time = dt.toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    const badge = s.tg
+      ? '<span class="stats-session-badge tg">TG</span>'
+      : '<span class="stats-session-badge web">Web</span>';
+    const src = s.ref ? new URL(s.ref).hostname : 'Прямой';
+    return `<div class="stats-session-row">
+      <span class="stats-session-time">${time}</span>
+      <span class="stats-session-source">${src}</span>
+      ${badge}
+    </div>`;
+  }).join('');
+}
+
+$('#btnRefreshStats').addEventListener('click', loadStats);
+
 /* ===== EVENT LISTENERS ===== */
 
 // export / import

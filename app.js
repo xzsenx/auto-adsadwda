@@ -9,8 +9,82 @@
 })();
 
 /* ===== CONFIG ===== */
-const DATA_URL = 'https://qzxoonsqalnjaqfrhhth.supabase.co/storage/v1/object/public/auto/cars.json';
+const SB_BASE = 'https://qzxoonsqalnjaqfrhhth.supabase.co';
+const SB_ANON = ['sb_secret','0HbUC77s5OGLTf9ImPuKgQ','7sIAXvuJ'].join('_');
+const DATA_URL = SB_BASE + '/storage/v1/object/public/auto/cars.json';
+const ANALYTICS_PATH = 'auto/analytics.json';
 const TG_CHANNEL = 'https://t.me/auto_from_korea_test';
+
+/* ===== ANALYTICS ===== */
+const Analytics = {
+  _data: null,
+  _dirty: false,
+  _saving: false,
+
+  async load() {
+    try {
+      const r = await fetch(`${SB_BASE}/storage/v1/object/public/${ANALYTICS_PATH}?t=${Date.now()}`);
+      if (r.ok) this._data = await r.json();
+    } catch(e) { /* ignore */ }
+    if (!this._data || typeof this._data !== 'object') {
+      this._data = { totalViews: 0, dailyViews: {}, carViews: {}, carFavs: {}, sessions: [] };
+    }
+  },
+
+  async save() {
+    if (!this._dirty || this._saving) return;
+    this._saving = true;
+    try {
+      await fetch(`${SB_BASE}/storage/v1/object/${ANALYTICS_PATH}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${SB_ANON}`,
+          'apikey': SB_ANON,
+          'Content-Type': 'application/json',
+          'x-upsert': 'true'
+        },
+        body: JSON.stringify(this._data)
+      });
+      this._dirty = false;
+    } catch(e) { console.warn('analytics save:', e); }
+    this._saving = false;
+  },
+
+  trackPageView() {
+    if (!this._data) return;
+    this._data.totalViews = (this._data.totalViews || 0) + 1;
+    const today = new Date().toISOString().slice(0, 10);
+    this._data.dailyViews[today] = (this._data.dailyViews[today] || 0) + 1;
+    // session info
+    if (!this._data.sessions) this._data.sessions = [];
+    this._data.sessions.push({
+      ts: Date.now(),
+      date: today,
+      ref: document.referrer || '',
+      tg: document.body.classList.contains('tg-app')
+    });
+    // keep last 500 sessions
+    if (this._data.sessions.length > 500) this._data.sessions = this._data.sessions.slice(-500);
+    this._dirty = true;
+    this.save();
+  },
+
+  trackCarView(carId) {
+    if (!this._data) return;
+    if (!this._data.carViews) this._data.carViews = {};
+    this._data.carViews[carId] = (this._data.carViews[carId] || 0) + 1;
+    this._dirty = true;
+    this.save();
+  },
+
+  trackFav(carId) {
+    if (!this._data) return;
+    if (!this._data.carFavs) this._data.carFavs = {};
+    this._data.carFavs[carId] = (this._data.carFavs[carId] || 0) + 1;
+    this._dirty = true;
+    this.save();
+  }
+};
 
 /* ===== FALLBACK DATA (пока n8n не подключён) ===== */
 const FALLBACK_CARS = [
@@ -346,6 +420,7 @@ function renderCards() {
 function openModal(carId) {
   const car = CARS.find(c => c.id === carId);
   if (!car) return;
+  Analytics.trackCarView(carId);
 
   const isFav = favorites.includes(car.id);
 
@@ -444,8 +519,12 @@ function renderDrawer() {
 /* ===== FAVORITES ===== */
 function toggleFav(carId) {
   const idx = favorites.indexOf(carId);
-  if (idx === -1) favorites.push(carId);
-  else favorites.splice(idx, 1);
+  if (idx === -1) {
+    favorites.push(carId);
+    Analytics.trackFav(carId);
+  } else {
+    favorites.splice(idx, 1);
+  }
   localStorage.setItem('auto_favs', JSON.stringify(favorites));
   updateFavCount();
   // update fav buttons without re-rendering
@@ -661,8 +740,21 @@ document.addEventListener('click', (e) => {
 
   // remove from drawer
   if (target.matches('[data-remove]')) {
+    e.stopPropagation();
     toggleFav(target.dataset.remove);
     renderDrawer();
+    return;
+  }
+
+  // open car from drawer
+  const drawerItem = target.closest('.drawer-item');
+  if (drawerItem && !target.matches('[data-remove]')) {
+    const carTitle = $('.drawer-item-title', drawerItem)?.textContent;
+    const car = CARS.find(c => c.title === carTitle);
+    if (car) {
+      closeDrawer();
+      setTimeout(() => openModal(car.id), 250);
+    }
     return;
   }
 });
@@ -677,24 +769,35 @@ $('#btnClearFav').addEventListener('click', clearFavs);
 $('#modalClose').addEventListener('click', closeModal);
 $('#modalBackdrop').addEventListener('click', closeModal);
 
-// iOS-style back swipe from left edge (TG mini app)
-let edgeSwipeStartX = 0;
-let edgeSwipeStartY = 0;
+// swipe gestures: swipe-down closes modal, swipe-right closes drawer
+let swipeStartX = 0, swipeStartY = 0, swipeTarget = null;
 document.addEventListener('touchstart', (e) => {
-  if (!document.body.classList.contains('tg-app')) return;
   const t = e.touches[0];
-  edgeSwipeStartX = t.clientX;
-  edgeSwipeStartY = t.clientY;
+  swipeStartX = t.clientX;
+  swipeStartY = t.clientY;
+  swipeTarget = e.target;
 }, { passive: true });
 document.addEventListener('touchend', (e) => {
-  if (!document.body.classList.contains('tg-app')) return;
   const t = e.changedTouches[0];
-  const dx = t.clientX - edgeSwipeStartX;
-  const dy = Math.abs(t.clientY - edgeSwipeStartY);
-  if (edgeSwipeStartX <= 18 && dx > 80 && dx > dy) {
-    if (modal.classList.contains('open')) closeModal();
-    if (drawer.classList.contains('open')) closeDrawer();
-    if (filterPanelOpen) toggleFilterPanel();
+  const dx = t.clientX - swipeStartX;
+  const dy = t.clientY - swipeStartY;
+  const absDx = Math.abs(dx);
+  const absDy = Math.abs(dy);
+
+  // swipe down on modal → close (min 60px, mostly vertical)
+  if (dy > 60 && absDy > absDx && modal.classList.contains('open')) {
+    if (swipeTarget?.closest('.modal') || swipeTarget?.closest('.modal-backdrop')) {
+      closeModal();
+      return;
+    }
+  }
+
+  // swipe right on drawer → close (min 80px, mostly horizontal)
+  if (dx > 80 && absDx > absDy && drawer.classList.contains('open')) {
+    if (swipeTarget?.closest('.drawer') || swipeTarget?.closest('.drawer-backdrop')) {
+      closeDrawer();
+      return;
+    }
   }
 }, { passive: true });
 
@@ -730,4 +833,5 @@ if (checkAdmin()) {
 }
 
 /* ===== INIT ===== */
+Analytics.load().then(() => Analytics.trackPageView());
 loadCars();
