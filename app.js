@@ -7,13 +7,18 @@
     if (tg.requestFullscreen) tg.requestFullscreen();
     document.body.classList.add('tg-app');
     // set safe-area CSS vars from TG
+    // safeAreaInset = device (notch/status bar)
+    // contentSafeAreaInset = TG header (Закрыть button area)
     const root = document.documentElement;
     function updateSafeArea() {
-      const top = tg.safeAreaInset?.top || tg.contentSafeAreaInset?.top || 0;
-      root.style.setProperty('--tg-safe-top', top + 'px');
+      const deviceTop = tg.safeAreaInset?.top || 0;
+      const contentTop = tg.contentSafeAreaInset?.top || 0;
+      root.style.setProperty('--tg-safe-top', (deviceTop + contentTop) + 'px');
     }
     updateSafeArea();
     tg.onEvent?.('viewportChanged', updateSafeArea);
+    tg.onEvent?.('safeAreaChanged', updateSafeArea);
+    tg.onEvent?.('contentSafeAreaChanged', updateSafeArea);
   }
 })();
 
@@ -778,7 +783,7 @@ $('#btnClearFav').addEventListener('click', clearFavs);
 $('#modalClose').addEventListener('click', closeModal);
 $('#modalBackdrop').addEventListener('click', closeModal);
 
-// swipe gestures: swipe-down closes modal, swipe-right closes drawer
+// swipe gestures: iOS-style edge swipe, swipe-down on modal, swipe-right on drawer
 let swipeStartX = 0, swipeStartY = 0, swipeTarget = null;
 document.addEventListener('touchstart', (e) => {
   const t = e.touches[0];
@@ -792,6 +797,13 @@ document.addEventListener('touchend', (e) => {
   const dy = t.clientY - swipeStartY;
   const absDx = Math.abs(dx);
   const absDy = Math.abs(dy);
+
+  // iOS-style edge swipe from left (start within 25px of left edge, swipe >80px right)
+  if (swipeStartX <= 25 && dx > 80 && absDx > absDy) {
+    if (modal.classList.contains('open')) { closeModal(); return; }
+    if (drawer.classList.contains('open')) { closeDrawer(); return; }
+    if (filterPanelOpen) { toggleFilterPanel(); return; }
+  }
 
   // swipe down on modal → close (min 60px, mostly vertical)
   if (dy > 60 && absDy > absDx && modal.classList.contains('open')) {

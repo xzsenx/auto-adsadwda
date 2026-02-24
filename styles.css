@@ -664,13 +664,13 @@ body.invert .card-chip { background: rgba(0,0,0,.06); }
 
 .modal-close {
   position: absolute; top: 12px; right: 12px; z-index: 4;
-  width: 32px; height: 32px; padding: 0;
+  width: 38px; height: 38px; padding: 0;
   border-radius: 50%;
   border: none;
-  background: rgba(0,0,0,.5);
+  background: rgba(0,0,0,.55);
   backdrop-filter: blur(8px);
   color: #fff;
-  font-size: 14px;
+  font-size: 18px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   transition: background .2s;
@@ -921,7 +921,7 @@ body.tg-app .modal {
   padding-bottom: calc(20px + env(safe-area-inset-bottom));
 }
 body.tg-app .modal.open { transform: translateY(0); }
-body.tg-app .modal-close { top: 10px; right: 10px; width: 30px; height: 30px; font-size: 13px; }
+body.tg-app .modal-close { top: 10px; right: 10px; width: 36px; height: 36px; font-size: 17px; }
 body.tg-app .modal-title { font-size: 18px; }
 body.tg-app .modal-price { font-size: 16px; margin-bottom: 10px; }
 body.tg-app .modal-desc { font-size: 12px; margin-bottom: 12px; }
