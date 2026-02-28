@@ -872,11 +872,7 @@ body.invert .modal-close:hover { background: rgba(0,0,0,.2); }
 }
 
 /* ===== TELEGRAM MINI APP ===== */
-body.tg-app {
-  max-width: 480px;
-  margin: 0 auto;
-  position: relative;
-}
+/* no max-width constraint — fill the screen on desktop too */
 
 body.tg-app .hero,
 body.tg-app .marquee,
@@ -888,8 +884,6 @@ body.tg-app .nav { display: none; }
 body.tg-app .topbar {
   padding: 8px 14px;
   padding-top: calc(8px + var(--tg-safe-top, env(safe-area-inset-top, 0px)));
-  max-width: 480px;
-  margin: 0 auto;
 }
 
 body.tg-app .filters-bar { padding-top: 16px; }
@@ -919,17 +913,49 @@ body.tg-app .card-chip { padding: 2px 6px; font-size: clamp(8px, 2.2vw, 10px); }
 body.tg-app .card-badge { font-size: clamp(8px, 2.2vw, 10px); padding: 2px 7px; top: 6px; left: 6px; }
 body.tg-app .card-price-tag { font-size: clamp(10px, 2.8vw, 12px); padding: 3px 8px; bottom: 6px; right: 6px; }
 
+/* desktop TG: more columns, normal font sizes */
+@media (min-width: 600px) {
+  body.tg-app .grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  body.tg-app .card-title { font-size: 14px; }
+  body.tg-app .card-desc { font-size: 12px; }
+  body.tg-app .card-chip { font-size: 10px; }
+  body.tg-app .card-badge { font-size: 10px; }
+  body.tg-app .card-price-tag { font-size: 12px; }
+  body.tg-app .catalog { padding: 20px 24px 40px; }
+}
+
 /* bottom sheet modal in TG */
 body.tg-app .modal {
-  top: auto; left: 50%; bottom: 0;
-  transform: translateX(-50%) translateY(100%);
-  width: 100%; max-width: 480px;
+  top: auto; left: 0; bottom: 0;
+  transform: translateY(100%);
+  width: 100%; max-width: 100%;
   max-height: 92vh;
   border-radius: 18px 18px 0 0;
   padding: 20px 16px;
   padding-bottom: calc(20px + env(safe-area-inset-bottom));
 }
-body.tg-app .modal.open { transform: translateX(-50%) translateY(0); }
+body.tg-app .modal.open { transform: translateY(0); }
+
+/* on desktop TG: centered modal instead of bottom sheet */
+@media (min-width: 600px) {
+  body.tg-app .modal {
+    top: 50%; left: 50%; bottom: auto;
+    transform: translate(-50%, -50%) scale(.96);
+    width: 90vw; max-width: 560px;
+    max-height: 85vh;
+    border-radius: 18px;
+    padding: 28px;
+    opacity: 0;
+    transition: opacity .2s, transform .2s;
+  }
+  body.tg-app .modal.open {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
 body.tg-app .modal-close { top: 10px; right: 10px; width: 36px; height: 36px; font-size: 17px; }
 body.tg-app .modal-title { font-size: 18px; }
 body.tg-app .modal-price { font-size: 16px; margin-bottom: 10px; }
