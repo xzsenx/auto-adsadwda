@@ -492,6 +492,52 @@ document.addEventListener('click', (e) => {
   dots.forEach((d, i) => d.classList.toggle('active', i === idx));
 });
 
+/* ===== GALLERY TOUCH SWIPE ===== */
+(function() {
+  let startX = 0, startY = 0, moving = false, gallery = null;
+
+  document.addEventListener('touchstart', (e) => {
+    gallery = e.target.closest('.gallery');
+    if (!gallery) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    moving = true;
+    gallery.querySelector('.gallery-track').style.transition = 'none';
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!moving || !gallery) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    // only horizontal swipe
+    if (Math.abs(dy) > Math.abs(dx)) { moving = false; return; }
+    e.preventDefault();
+    const idx = parseInt(gallery.dataset.index) || 0;
+    const offset = -(idx * 100) + (dx / gallery.offsetWidth) * 100;
+    gallery.querySelector('.gallery-track').style.transform = `translateX(${offset}%)`;
+  }, { passive: false });
+
+  document.addEventListener('touchend', (e) => {
+    if (!moving || !gallery) return;
+    moving = false;
+    const dx = e.changedTouches[0].clientX - startX;
+    const track = gallery.querySelector('.gallery-track');
+    const slides = gallery.querySelectorAll('.gallery-slide');
+    const dots = gallery.querySelectorAll('.gallery-dot');
+    let idx = parseInt(gallery.dataset.index) || 0;
+    const threshold = gallery.offsetWidth * 0.2;
+
+    if (dx < -threshold && idx < slides.length - 1) idx++;
+    else if (dx > threshold && idx > 0) idx--;
+
+    gallery.dataset.index = idx;
+    track.style.transition = 'transform .3s ease';
+    track.style.transform = `translateX(-${idx * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    gallery = null;
+  }, { passive: true });
+})();
+
 /* ===== DRAWER ===== */
 function openDrawer() {
   renderDrawer();
