@@ -55,7 +55,17 @@
             <input type="file" id="btnImport" accept=".xlsx,.xls" style="display:none">
           </label>
           <button class="btn btn-sm" id="btnMassPrice">% Цены</button>
+          <button class="btn btn-sm" id="btnSelectMode">☐ Выбрать</button>
           <button class="btn btn-primary" id="btnAddCar">+ Добавить</button>
+        </div>
+      </div>
+      <div class="select-bar" id="selectBar" style="display:none">
+        <span class="select-bar-info">Выбрано: <strong id="selectCount">0</strong></span>
+        <div class="select-bar-actions">
+          <button class="btn btn-sm" id="btnSelectAll">Все</button>
+          <button class="btn btn-sm" id="btnDeselectAll">Снять</button>
+          <button class="btn btn-sm btn-delete" id="btnDeleteSelected">Удалить выбранные</button>
+          <button class="btn btn-sm" id="btnCancelSelect">✕ Отмена</button>
         </div>
       </div>
       <div class="admin-list" id="adminList">

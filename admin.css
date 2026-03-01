@@ -560,6 +560,20 @@ body.invert .stats-session-badge.web { background: rgba(0,0,0,.08); }
   background: var(--fg); border-color: var(--fg); color: var(--bg);
 }
 
+/* ===== SELECT BAR ===== */
+.select-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 10px 14px;
+  background: var(--card); border: 1px solid var(--fg);
+  border-radius: var(--radius); margin-bottom: 12px;
+}
+.select-bar-info {
+  font-size: .85rem; color: var(--fg); white-space: nowrap;
+}
+.select-bar-actions {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+
 /* ===== PHOTO DRAG & DROP ===== */
 .photo-hint {
   font-weight: 400; font-size: .75rem; color: var(--muted);

@@ -802,6 +802,7 @@ document.addEventListener('click', (e) => {
       selectMode = true;
       $('#massSelectedInfo').style.display = '';
       $('#massSelectedCount').textContent = selectedCars.size;
+      updateSelectBar();
       renderList();
     } else {
       $('#massSelectedInfo').style.display = 'none';
@@ -813,6 +814,54 @@ document.addEventListener('click', (e) => {
 
 $('#massPricePct').addEventListener('input', updateMassPricePreview);
 
+/* ===== SELECT MODE ===== */
+function enterSelectMode() {
+  selectMode = true;
+  updateSelectBar();
+  renderList();
+}
+
+function exitSelectMode() {
+  selectMode = false;
+  selectedCars.clear();
+  updateSelectBar();
+  renderList();
+}
+
+function updateSelectBar() {
+  const bar = $('#selectBar');
+  bar.style.display = selectMode ? '' : 'none';
+  $('#selectCount').textContent = selectedCars.size;
+  $('#btnSelectMode').textContent = selectMode ? '☑ Выбор' : '☐ Выбрать';
+}
+
+function selectAll() {
+  cars.forEach(c => selectedCars.add(c.id));
+  $$('.admin-card-check').forEach(el => el.classList.add('checked'));
+  updateSelectBar();
+  $('#massSelectedCount').textContent = selectedCars.size;
+  updateMassPricePreview();
+}
+
+function deselectAll() {
+  selectedCars.clear();
+  $$('.admin-card-check').forEach(el => el.classList.remove('checked'));
+  updateSelectBar();
+  $('#massSelectedCount').textContent = selectedCars.size;
+  updateMassPricePreview();
+}
+
+async function deleteSelected() {
+  if (!selectedCars.size) return;
+  if (!confirm(`Удалить ${selectedCars.size} выбранных авто? Это действие необратимо.`)) return;
+  cars = cars.filter(c => !selectedCars.has(c.id));
+  await saveCars();
+  selectedCars.clear();
+  selectMode = false;
+  updateSelectBar();
+  renderList();
+}
+
 /* ===== EVENT LISTENERS ===== */
 
 // export / import
@@ -822,6 +871,15 @@ $('#btnImport').addEventListener('change', (e) => {
   if (file) importExcel(file);
   e.target.value = '';
 });
+
+// select mode
+$('#btnSelectMode').addEventListener('click', () => {
+  if (selectMode) exitSelectMode(); else enterSelectMode();
+});
+$('#btnSelectAll').addEventListener('click', selectAll);
+$('#btnDeselectAll').addEventListener('click', deselectAll);
+$('#btnDeleteSelected').addEventListener('click', deleteSelected);
+$('#btnCancelSelect').addEventListener('click', exitSelectMode);
 
 // mass price
 $('#btnMassPrice').addEventListener('click', openMassPrice);
@@ -854,6 +912,7 @@ adminList.addEventListener('click', (e) => {
     const id = checkEl.dataset.check;
     if (selectedCars.has(id)) { selectedCars.delete(id); checkEl.classList.remove('checked'); }
     else { selectedCars.add(id); checkEl.classList.add('checked'); }
+    updateSelectBar();
     $('#massSelectedCount').textContent = selectedCars.size;
     updateMassPricePreview();
     return;
