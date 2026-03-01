@@ -128,17 +128,23 @@ async function uploadPhoto(id, file) {
   return `${SB_URL}/storage/v1/object/public/${path}`;
 }
 
-async function deletePhoto(id) {
-  try {
-    await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/photos/${id}.jpg`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${SB_KEY}`,
-        'apikey': SB_KEY
+async function deleteCarPhotos(car) {
+  if (!car?.images?.length) return;
+  // only delete photos hosted on our Supabase, not Telegram URLs
+  const sbPhotos = car.images.filter(url => url.includes(SB_URL));
+  for (const url of sbPhotos) {
+    try {
+      // extract path: .../object/public/auto/photos/xxx.jpg -> auto/photos/xxx.jpg
+      const match = url.match(/\/object\/public\/(.+?)(\?|$)/);
+      if (match) {
+        await fetch(`${SB_URL}/storage/v1/object/${match[1]}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${SB_KEY}`, 'apikey': SB_KEY }
+        });
       }
-    });
-  } catch (e) {
-    console.warn('deletePhoto:', e);
+    } catch (e) {
+      console.warn('deletePhoto:', e);
+    }
   }
 }
 
@@ -315,8 +321,9 @@ async function handleDelete() {
   if (!deleteId) return;
   const idx = cars.findIndex(c => c.id === deleteId);
   if (idx !== -1) {
+    const car = cars[idx];
     cars.splice(idx, 1);
-    await deletePhoto(deleteId);
+    await deleteCarPhotos(car);
     await saveCars();
     renderList();
   }
@@ -855,6 +862,11 @@ function deselectAll() {
 async function deleteSelected() {
   if (!selectedCars.size) return;
   if (!confirm(`Удалить ${selectedCars.size} выбранных авто? Это действие необратимо.`)) return;
+  // delete Supabase-hosted photos for each selected car
+  const toDelete = cars.filter(c => selectedCars.has(c.id));
+  for (const car of toDelete) {
+    await deleteCarPhotos(car);
+  }
   cars = cars.filter(c => !selectedCars.has(c.id));
   await saveCars();
   selectedCars.clear();
