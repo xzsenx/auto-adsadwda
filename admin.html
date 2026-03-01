@@ -54,6 +54,7 @@
           <label class="btn btn-sm" id="btnImportLabel">↑ Excel
             <input type="file" id="btnImport" accept=".xlsx,.xls" style="display:none">
           </label>
+          <button class="btn btn-sm" id="btnMassPrice">% Цены</button>
           <button class="btn btn-primary" id="btnAddCar">+ Добавить</button>
         </div>
       </div>
@@ -182,7 +183,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="filter-label">Фото</label>
+        <label class="filter-label">Фото <span class="photo-hint">(перетаскивайте для сортировки)</span></label>
         <input type="file" class="filter-input file-input" name="photo" accept="image/*">
         <div class="photo-preview" id="photoPreview"></div>
       </div>
@@ -192,6 +193,46 @@
         <button type="button" class="btn" id="editCancel">Отмена</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- mass price modal -->
+<div class="modal-backdrop" id="massPriceBackdrop" aria-hidden="true"></div>
+<div class="modal admin-modal confirm-modal" id="massPriceModal" aria-hidden="true">
+  <button class="btn btn-icon modal-close" id="massPriceClose">✕</button>
+  <div class="modal-body">
+    <h2 class="modal-title" style="margin-bottom:16px">Изменение цен</h2>
+    <div class="mass-price-form">
+      <div class="form-group">
+        <label class="filter-label">Действие</label>
+        <div class="mass-price-toggle">
+          <button class="btn btn-sm mass-toggle active" data-dir="up">↑ Повысить</button>
+          <button class="btn btn-sm mass-toggle" data-dir="down">↓ Понизить</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="filter-label">Процент</label>
+        <div class="price-input-wrap">
+          <input type="number" class="filter-input" id="massPricePct" min="1" max="100" value="5" step="1">
+          <span class="price-suffix">%</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="filter-label">Применить к</label>
+        <div class="mass-price-toggle">
+          <button class="btn btn-sm mass-scope active" data-scope="all">Все авто</button>
+          <button class="btn btn-sm mass-scope" data-scope="selected">Выбранные</button>
+        </div>
+      </div>
+      <div id="massSelectedInfo" class="mass-selected-info" style="display:none">
+        Выбрано: <strong id="massSelectedCount">0</strong> авто
+      </div>
+      <div class="mass-price-preview" id="massPricePreview"></div>
+      <div class="form-actions">
+        <button class="btn btn-primary" id="massPriceApply">Применить</button>
+        <button class="btn" id="massPriceCancel">Отмена</button>
+      </div>
+    </div>
   </div>
 </div>
 

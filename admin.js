@@ -10,6 +10,10 @@ const ADMIN_PASS = 'auto2026';
 let cars = [];
 let editingId = null;
 let deleteId = null;
+let selectedCars = new Set();
+let selectMode = false;
+let massPriceDir = 'up';
+let massPriceScope = 'all';
 
 /* ===== DOM ===== */
 const $ = (s, p = document) => p.querySelector(s);
@@ -164,9 +168,12 @@ function renderList() {
     const thumb = car.images && car.images[0]
       ? `<img class="admin-card-thumb" src="${car.images[0]}" alt="${car.title}" loading="lazy">`
       : `<div class="admin-card-placeholder">${car.title.charAt(0)}</div>`;
+    const checkVis = selectMode ? ' visible' : '';
+    const checked = selectedCars.has(car.id) ? ' checked' : '';
 
     return `
       <div class="admin-card" data-id="${car.id}">
+        <div class="admin-card-check${checkVis}${checked}" data-check="${car.id}">✓</div>
         ${thumb}
         <div class="admin-card-info">
           <div class="admin-card-title">${car.title}</div>
@@ -205,13 +212,8 @@ function openEdit(carId) {
   f.id.value       = car?.id || '';
   f.photo.value    = '';
 
-  // show current photo
-  photoPreview.innerHTML = '';
-  if (car?.images?.length) {
-    car.images.forEach(src => {
-      photoPreview.innerHTML += `<img src="${src}" alt="photo">`;
-    });
-  }
+  // show current photos with drag-and-drop
+  renderPhotoPreview(car?.images || []);
 
   editModal.classList.add('open');
   editBackdrop.classList.add('open');
@@ -270,21 +272,23 @@ async function handleSave(e) {
     }
   };
 
-  // upload photo if provided
+  // get current photo order from preview
+  const currentPhotos = [...photoPreview.querySelectorAll('.photo-thumb')]
+    .map(el => el.dataset.src)
+    .filter(Boolean);
+
+  // upload new photo if provided
   const photoFile = f.photo.files[0];
   if (photoFile) {
     try {
       const photoUrl = await uploadPhoto(id, photoFile);
-      carData.images = [photoUrl + '?t=' + Date.now()];
+      currentPhotos.push(photoUrl + '?t=' + Date.now());
     } catch (e) {
       alert('Ошибка загрузки фото: ' + e.message);
       return;
     }
-  } else if (editingId) {
-    // keep existing images
-    const existing = cars.find(c => c.id === editingId);
-    if (existing) carData.images = existing.images || [];
   }
+  carData.images = currentPhotos;
 
   if (editingId) {
     // update
@@ -574,6 +578,241 @@ function renderSessions(sessions) {
 
 $('#btnRefreshStats').addEventListener('click', loadStats);
 
+/* ===== PHOTO DRAG & DROP ===== */
+function renderPhotoPreview(images) {
+  photoPreview.innerHTML = '';
+  images.forEach((src, i) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'photo-thumb';
+    thumb.draggable = true;
+    thumb.dataset.src = src;
+    thumb.dataset.idx = i;
+    thumb.innerHTML = `
+      <img src="${src}" alt="photo ${i + 1}">
+      <span class="photo-order">${i + 1}</span>
+      <button class="photo-remove" type="button" data-remove-photo="${i}">✕</button>
+    `;
+    photoPreview.appendChild(thumb);
+  });
+  initPhotoDrag();
+}
+
+function initPhotoDrag() {
+  let dragEl = null;
+
+  photoPreview.querySelectorAll('.photo-thumb').forEach(thumb => {
+    thumb.addEventListener('dragstart', (e) => {
+      dragEl = thumb;
+      thumb.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    thumb.addEventListener('dragend', () => {
+      if (dragEl) dragEl.classList.remove('dragging');
+      photoPreview.querySelectorAll('.photo-thumb').forEach(t => t.classList.remove('drag-over'));
+      dragEl = null;
+      updatePhotoOrder();
+    });
+    thumb.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (thumb !== dragEl) thumb.classList.add('drag-over');
+    });
+    thumb.addEventListener('dragleave', () => {
+      thumb.classList.remove('drag-over');
+    });
+    thumb.addEventListener('drop', (e) => {
+      e.preventDefault();
+      thumb.classList.remove('drag-over');
+      if (!dragEl || dragEl === thumb) return;
+      // reorder
+      const children = [...photoPreview.children];
+      const fromIdx = children.indexOf(dragEl);
+      const toIdx = children.indexOf(thumb);
+      if (fromIdx < toIdx) thumb.after(dragEl);
+      else thumb.before(dragEl);
+      updatePhotoOrder();
+    });
+  });
+
+  // touch drag for mobile
+  let touchDragEl = null, touchClone = null, touchStartY = 0, touchStartX = 0;
+  photoPreview.querySelectorAll('.photo-thumb').forEach(thumb => {
+    thumb.addEventListener('touchstart', (e) => {
+      if (e.target.closest('.photo-remove')) return;
+      touchDragEl = thumb;
+      const r = thumb.getBoundingClientRect();
+      touchStartX = e.touches[0].clientX - r.left;
+      touchStartY = e.touches[0].clientY - r.top;
+      setTimeout(() => {
+        if (touchDragEl === thumb) {
+          thumb.classList.add('dragging');
+          touchClone = thumb.cloneNode(true);
+          touchClone.style.cssText = `position:fixed;width:${r.width}px;height:${r.height}px;z-index:9999;pointer-events:none;opacity:.8;`;
+          document.body.appendChild(touchClone);
+        }
+      }, 200);
+    }, { passive: true });
+  });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!touchClone || !touchDragEl) return;
+    const x = e.touches[0].clientX - touchStartX;
+    const y = e.touches[0].clientY - touchStartY;
+    touchClone.style.left = x + 'px';
+    touchClone.style.top = y + 'px';
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    if (!touchDragEl) return;
+    if (touchClone) {
+      const x = e.changedTouches[0].clientX;
+      const y = e.changedTouches[0].clientY;
+      touchClone.remove();
+      touchClone = null;
+
+      const target = [...photoPreview.querySelectorAll('.photo-thumb')].find(t => {
+        if (t === touchDragEl) return false;
+        const r = t.getBoundingClientRect();
+        return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+      });
+      if (target) {
+        const children = [...photoPreview.children];
+        const fromIdx = children.indexOf(touchDragEl);
+        const toIdx = children.indexOf(target);
+        if (fromIdx < toIdx) target.after(touchDragEl);
+        else target.before(touchDragEl);
+      }
+    }
+    touchDragEl.classList.remove('dragging');
+    touchDragEl = null;
+    updatePhotoOrder();
+  }, { passive: true });
+}
+
+function updatePhotoOrder() {
+  photoPreview.querySelectorAll('.photo-thumb').forEach((thumb, i) => {
+    thumb.dataset.idx = i;
+    const order = thumb.querySelector('.photo-order');
+    if (order) order.textContent = i + 1;
+  });
+}
+
+// remove photo from preview
+photoPreview.addEventListener('click', (e) => {
+  const removeBtn = e.target.closest('[data-remove-photo]');
+  if (!removeBtn) return;
+  e.preventDefault();
+  const thumb = removeBtn.closest('.photo-thumb');
+  if (thumb) {
+    thumb.remove();
+    updatePhotoOrder();
+  }
+});
+
+/* ===== MASS PRICE ===== */
+function parseRawPrice(str) {
+  return parseInt(String(str).replace(/[^0-9]/g, ''), 10) || 0;
+}
+function formatRawPrice(num) {
+  return num.toLocaleString('ru-RU').replace(/,/g, ' ') + ' ₽';
+}
+
+function openMassPrice() {
+  massPriceDir = 'up';
+  massPriceScope = 'all';
+  $$('.mass-toggle').forEach(b => b.classList.toggle('active', b.dataset.dir === 'up'));
+  $$('.mass-scope').forEach(b => b.classList.toggle('active', b.dataset.scope === 'all'));
+  $('#massPricePct').value = '5';
+  $('#massSelectedInfo').style.display = 'none';
+  updateMassPricePreview();
+  $('#massPriceModal').classList.add('open');
+  $('#massPriceBackdrop').classList.add('open');
+  $('#massPriceModal').setAttribute('aria-hidden', 'false');
+}
+
+function closeMassPrice() {
+  $('#massPriceModal').classList.remove('open');
+  $('#massPriceBackdrop').classList.remove('open');
+  $('#massPriceModal').setAttribute('aria-hidden', 'true');
+}
+
+function getMassPriceCars() {
+  if (massPriceScope === 'selected') {
+    return cars.filter(c => selectedCars.has(c.id));
+  }
+  return [...cars];
+}
+
+function updateMassPricePreview() {
+  const pct = parseInt($('#massPricePct').value, 10) || 0;
+  const target = getMassPriceCars();
+  const preview = $('#massPricePreview');
+  if (!target.length || !pct) { preview.innerHTML = ''; return; }
+
+  const mult = massPriceDir === 'up' ? (1 + pct / 100) : (1 - pct / 100);
+  const lines = target.slice(0, 8).map(c => {
+    const old = parseRawPrice(c.price);
+    const nw = Math.round(old * mult);
+    return `<div class="preview-line"><span class="preview-name">${c.title}</span><span class="preview-old">${formatRawPrice(old)}</span><span class="preview-new">${formatRawPrice(nw)}</span></div>`;
+  }).join('');
+  const more = target.length > 8 ? `<div style="opacity:.5;font-size:.75rem;padding-top:4px">...и ещё ${target.length - 8}</div>` : '';
+  preview.innerHTML = lines + more;
+}
+
+async function applyMassPrice() {
+  const pct = parseInt($('#massPricePct').value, 10) || 0;
+  if (!pct) return;
+  const target = getMassPriceCars();
+  if (!target.length) return;
+
+  const mult = massPriceDir === 'up' ? (1 + pct / 100) : (1 - pct / 100);
+  const dir = massPriceDir === 'up' ? 'повышение' : 'понижение';
+  if (!confirm(`${dir} цен на ${pct}% для ${target.length} авто. Продолжить?`)) return;
+
+  const targetIds = new Set(target.map(c => c.id));
+  for (const car of cars) {
+    if (targetIds.has(car.id)) {
+      const old = parseRawPrice(car.price);
+      const nw = Math.round(old * mult);
+      car.price = formatRawPrice(nw);
+    }
+  }
+
+  await saveCars();
+  closeMassPrice();
+  selectedCars.clear();
+  selectMode = false;
+  renderList();
+}
+
+// mass price toggle clicks
+document.addEventListener('click', (e) => {
+  const mt = e.target.closest('.mass-toggle');
+  if (mt) {
+    massPriceDir = mt.dataset.dir;
+    $$('.mass-toggle').forEach(b => b.classList.toggle('active', b.dataset.dir === massPriceDir));
+    updateMassPricePreview();
+    return;
+  }
+  const ms = e.target.closest('.mass-scope');
+  if (ms) {
+    massPriceScope = ms.dataset.scope;
+    $$('.mass-scope').forEach(b => b.classList.toggle('active', b.dataset.scope === massPriceScope));
+    if (massPriceScope === 'selected') {
+      selectMode = true;
+      $('#massSelectedInfo').style.display = '';
+      $('#massSelectedCount').textContent = selectedCars.size;
+      renderList();
+    } else {
+      $('#massSelectedInfo').style.display = 'none';
+    }
+    updateMassPricePreview();
+    return;
+  }
+});
+
+$('#massPricePct').addEventListener('input', updateMassPricePreview);
+
 /* ===== EVENT LISTENERS ===== */
 
 // export / import
@@ -583,6 +822,13 @@ $('#btnImport').addEventListener('change', (e) => {
   if (file) importExcel(file);
   e.target.value = '';
 });
+
+// mass price
+$('#btnMassPrice').addEventListener('click', openMassPrice);
+$('#massPriceApply').addEventListener('click', applyMassPrice);
+$('#massPriceCancel').addEventListener('click', closeMassPrice);
+$('#massPriceClose').addEventListener('click', closeMassPrice);
+$('#massPriceBackdrop').addEventListener('click', closeMassPrice);
 
 // add car button
 $('#btnAddCar').addEventListener('click', () => openEdit(null));
@@ -602,6 +848,16 @@ confirmBackdrop.addEventListener('click', closeConfirm);
 
 // event delegation for list buttons
 adminList.addEventListener('click', (e) => {
+  // checkbox toggle
+  const checkEl = e.target.closest('[data-check]');
+  if (checkEl) {
+    const id = checkEl.dataset.check;
+    if (selectedCars.has(id)) { selectedCars.delete(id); checkEl.classList.remove('checked'); }
+    else { selectedCars.add(id); checkEl.classList.add('checked'); }
+    $('#massSelectedCount').textContent = selectedCars.size;
+    updateMassPricePreview();
+    return;
+  }
   const editBtn = e.target.closest('[data-edit]');
   if (editBtn) {
     openEdit(editBtn.dataset.edit);
@@ -619,6 +875,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeEdit();
     closeConfirm();
+    closeMassPrice();
   }
 });
 

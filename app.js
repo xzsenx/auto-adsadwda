@@ -882,23 +882,6 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-/* ===== ADMIN CHECK ===== */
-const ADMIN_IDS = [0];
-const ADMIN_PASS = 'auto2026';
-function checkAdmin() {
-  const tg = window.Telegram?.WebApp;
-  if (tg?.initDataUnsafe?.user?.id) {
-    tg.ready();
-    if (ADMIN_IDS.includes(tg.initDataUnsafe.user.id)) return true;
-  }
-  return localStorage.getItem('auto_admin') === ADMIN_PASS;
-}
-
-if (checkAdmin()) {
-  const btn = document.getElementById('btnAdmin');
-  if (btn) btn.style.display = '';
-}
-
 /* ===== INIT ===== */
 Analytics.load().then(() => Analytics.trackPageView());
 loadCars();
