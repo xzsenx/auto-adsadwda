@@ -210,7 +210,7 @@ function openEdit(carId) {
   f.title.value    = car?.title || '';
   f.price.value    = (car?.price || '').replace(/\s*₽\s*$/, '');
   f.category.value = car?.category || 'sedan';
-  f.tag.value      = car?.tag || '';
+  f.tag.value      = car?.tag || f.category.value.toUpperCase();
   f.desc.value     = car?.desc || '';
   f.year.value     = car?.specs?.year || '';
   f.km.value       = car?.specs?.km || '';
@@ -903,6 +903,11 @@ $('#massPriceBackdrop').addEventListener('click', closeMassPrice);
 
 // add car button
 $('#btnAddCar').addEventListener('click', () => openEdit(null));
+
+// sync tag when category changes
+editForm.category.addEventListener('change', () => {
+  editForm.tag.value = editForm.category.value.toUpperCase();
+});
 
 // edit form submit
 editForm.addEventListener('submit', handleSave);
