@@ -181,6 +181,7 @@ function renderList() {
             <span>${car.price}</span>
             <span>${car.specs?.year || ''}</span>
             <span>${car.specs?.km || ''} км</span>
+            <span>${car.specs?.engine || ''}</span>
           </div>
           <div class="admin-card-category">${car.category || ''}</div>
         </div>
@@ -207,7 +208,7 @@ function openEdit(carId) {
   f.desc.value     = car?.desc || '';
   f.year.value     = car?.specs?.year || '';
   f.km.value       = car?.specs?.km || '';
-  f.engine.value   = car?.specs?.engine || '';
+  f.engine.value   = (car?.specs?.engine || '').replace(/\s*л\.?\s*с\.?\s*$/i, '').trim();
   f.drive.value    = car?.specs?.drive || '';
   f.id.value       = car?.id || '';
   f.photo.value    = '';
@@ -267,7 +268,7 @@ async function handleSave(e) {
     specs: {
       year: f.year.value.trim(),
       km: f.km.value.trim(),
-      engine: f.engine.value.trim(),
+      engine: f.engine.value.trim() ? f.engine.value.trim().replace(/\s*л\.?\s*с\.?\s*$/i, '').trim() + ' л.с.' : '',
       drive: f.drive.value
     }
   };

@@ -249,7 +249,7 @@ select.filter-input option {
   align-items: center;
 }
 .price-input-wrap .filter-input {
-  padding-right: 32px;
+  padding-right: 40px;
   width: 100%;
 }
 .price-suffix {
