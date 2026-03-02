@@ -669,10 +669,21 @@ function pulseApply() {
   btn.classList.add('pulse');
 }
 
-// pulse on filter inputs change
+// pulse on filter inputs change + numeric-only validation
 document.addEventListener('input', (e) => {
   if (e.target.matches('#priceMin,#priceMax,#yearMin,#yearMax,#kmMin,#kmMax,#hpMin,#hpMax')) {
+    // strip non-numeric characters
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
     pulseApply();
+  }
+});
+
+// block non-numeric keys on filter inputs
+document.addEventListener('keydown', (e) => {
+  if (e.target.matches('#priceMin,#priceMax,#yearMin,#yearMax,#kmMin,#kmMax,#hpMin,#hpMax')) {
+    const allowed = ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End','Enter'];
+    if (allowed.includes(e.key) || e.ctrlKey || e.metaKey) return;
+    if (e.key < '0' || e.key > '9') e.preventDefault();
   }
 });
 
