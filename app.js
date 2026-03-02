@@ -71,11 +71,12 @@ const Analytics = {
     this._data.dailyViews[today] = (this._data.dailyViews[today] || 0) + 1;
     // session info
     if (!this._data.sessions) this._data.sessions = [];
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
     this._data.sessions.push({
       ts: Date.now(),
       date: today,
-      ref: document.referrer || '',
-      tg: document.body.classList.contains('tg-app')
+      tg: document.body.classList.contains('tg-app'),
+      user: tgUser ? { id: tgUser.id, name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' '), username: tgUser.username || '' } : null
     });
     // keep last 500 sessions
     if (this._data.sessions.length > 500) this._data.sessions = this._data.sessions.slice(-500);

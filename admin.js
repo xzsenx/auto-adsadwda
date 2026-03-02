@@ -462,9 +462,13 @@ function renderStats() {
   const yesterdayViews = d.dailyViews?.[yesterday] || 0;
   const totalCarViews = Object.values(d.carViews || {}).reduce((a, b) => a + b, 0);
   const totalFavs = Object.values(d.carFavs || {}).reduce((a, b) => a + b, 0);
-  const sessionsToday = (d.sessions || []).filter(s => s.date === today).length;
   const tgSessions = (d.sessions || []).filter(s => s.tg).length;
   const webSessions = (d.sessions || []).filter(s => !s.tg).length;
+  // unique users (by TG user id)
+  const uniqueUsers = new Set();
+  (d.sessions || []).forEach(s => {
+    if (s.user?.id) uniqueUsers.add(s.user.id);
+  });
 
   $('#statsKpi').innerHTML = `
     <div class="stats-kpi">
@@ -478,6 +482,10 @@ function renderStats() {
     <div class="stats-kpi">
       <div class="stats-kpi-val">${yesterdayViews}</div>
       <div class="stats-kpi-label">Вчера</div>
+    </div>
+    <div class="stats-kpi">
+      <div class="stats-kpi-val">${uniqueUsers.size}</div>
+      <div class="stats-kpi-label">Пользователей</div>
     </div>
     <div class="stats-kpi">
       <div class="stats-kpi-val">${totalCarViews}</div>
@@ -575,10 +583,10 @@ function renderSessions(sessions) {
     const badge = s.tg
       ? '<span class="stats-session-badge tg">TG</span>'
       : '<span class="stats-session-badge web">Web</span>';
-    const src = s.ref ? new URL(s.ref).hostname : 'Прямой';
+    const userName = s.user ? (s.user.username ? `@${s.user.username}` : s.user.name || `ID ${s.user.id}`) : 'Аноним';
     return `<div class="stats-session-row">
       <span class="stats-session-time">${time}</span>
-      <span class="stats-session-source">${src}</span>
+      <span class="stats-session-user">${userName}</span>
       ${badge}
     </div>`;
   }).join('');

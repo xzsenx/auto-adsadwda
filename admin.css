@@ -503,6 +503,14 @@ body.invert .stats-row-bar { background: rgba(0,0,0,.08); }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.stats-session-user {
+  flex: 1;
+  color: var(--fg);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .stats-session-badge {
   padding: 2px 8px;
   border-radius: 999px;
