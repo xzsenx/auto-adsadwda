@@ -412,7 +412,7 @@ function renderCards() {
       <div class="car-card reveal" data-id="${car.id}">
         <div class="card-media" data-open="modal">
           ${carImage(car)}
-          <span class="card-badge badge-${car.category || 'sedan'}">${tagRu(car.tag)}</span>
+          <span class="card-badge">${tagRu(car.tag)}</span>
           <span class="card-price-tag">${formatPrice(car.price)}</span>
           <button class="card-fav-btn${isFav ? ' active' : ''}" data-fav="${car.id}" title="В избранное">${isFav ? '♥' : '♡'}</button>
         </div>
@@ -420,9 +420,9 @@ function renderCards() {
           <div class="card-title">${car.title}</div>
           <div class="card-desc">${car.desc}</div>
           <div class="card-chips">
-            ${car.specs.year ? `<span class="card-chip">📅 ${car.specs.year}</span>` : ''}
-            ${car.specs.km ? `<span class="card-chip">🛣 ${car.specs.km} км</span>` : ''}
-            ${car.specs.engine ? `<span class="card-chip">⚡ ${car.specs.engine}</span>` : ''}
+            <span class="card-chip">${car.specs.year}</span>
+            <span class="card-chip">${car.specs.km} км</span>
+            <span class="card-chip">${car.specs.engine}</span>
           </div>
         </div>
       </div>`;
@@ -447,10 +447,10 @@ function openModal(carId) {
     <div class="modal-price">${formatPrice(car.price)}</div>
     <div class="modal-desc">${car.desc}</div>
     <div class="modal-specs">
-      <div class="spec-item"><div class="spec-label">📅 Год</div><div class="spec-val">${car.specs.year}</div></div>
-      <div class="spec-item"><div class="spec-label">🛣 Пробег</div><div class="spec-val">${car.specs.km} км</div></div>
-      <div class="spec-item"><div class="spec-label">⚡ Двигатель</div><div class="spec-val">${car.specs.engine}</div></div>
-      <div class="spec-item"><div class="spec-label">🔄 Привод</div><div class="spec-val">${car.specs.drive}</div></div>
+      <div class="spec-item"><div class="spec-label">Год</div><div class="spec-val">${car.specs.year}</div></div>
+      <div class="spec-item"><div class="spec-label">Пробег</div><div class="spec-val">${car.specs.km} км</div></div>
+      <div class="spec-item"><div class="spec-label">Двигатель</div><div class="spec-val">${car.specs.engine}</div></div>
+      <div class="spec-item"><div class="spec-label">Привод</div><div class="spec-val">${car.specs.drive}</div></div>
     </div>
     <button class="btn btn-primary btn-full" data-fav-modal="${car.id}">
       ${isFav ? '♥ В избранном' : '♡ Добавить в избранное'}
