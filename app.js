@@ -593,9 +593,6 @@ function toggleFav(carId) {
   $$(`[data-fav="${carId}"]`).forEach(btn => {
     btn.textContent = isFav ? '♥' : '♡';
     btn.classList.toggle('active', isFav);
-    btn.classList.remove('pop');
-    void btn.offsetWidth;
-    btn.classList.add('pop');
   });
 }
 
