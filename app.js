@@ -2,23 +2,34 @@
 (function() {
   const tg = window.Telegram?.WebApp;
   if (tg) {
-    tg.ready();
-    tg.expand();
-    if (tg.requestFullscreen) tg.requestFullscreen();
-    document.body.classList.add('tg-app');
+    /* Неподдержанный вызов SDK бросает исключение и обрывает весь файл,
+       а ниже в нём вся отрисовка каталога. Поэтому инициализация
+       обёрнута целиком: витрина обязана открыться и в старом клиенте. */
+    try {
+      tg.ready();
+      tg.expand();
+      /* Метод есть в объекте всегда, но работает с Bot API 8.0.
+         Проверки наличия недостаточно — нужна версия. */
+      if (tg.isVersionAtLeast?.('8.0')) {
+        try { tg.requestFullscreen(); } catch (e) { /* не критично */ }
+      }
+      document.body.classList.add('tg-app');
     // set safe-area CSS vars from TG
     // safeAreaInset = device (notch/status bar)
     // contentSafeAreaInset = TG header (Закрыть button area)
-    const root = document.documentElement;
-    function updateSafeArea() {
-      const deviceTop = tg.safeAreaInset?.top || 0;
-      const contentTop = tg.contentSafeAreaInset?.top || 0;
-      root.style.setProperty('--tg-safe-top', (deviceTop + contentTop) + 'px');
+      const root = document.documentElement;
+      function updateSafeArea() {
+        const deviceTop = tg.safeAreaInset?.top || 0;
+        const contentTop = tg.contentSafeAreaInset?.top || 0;
+        root.style.setProperty('--tg-safe-top', (deviceTop + contentTop) + 'px');
+      }
+      updateSafeArea();
+      tg.onEvent?.('viewportChanged', updateSafeArea);
+      tg.onEvent?.('safeAreaChanged', updateSafeArea);
+      tg.onEvent?.('contentSafeAreaChanged', updateSafeArea);
+    } catch (e) {
+      console.warn('Telegram init пропущен:', e?.message || e);
     }
-    updateSafeArea();
-    tg.onEvent?.('viewportChanged', updateSafeArea);
-    tg.onEvent?.('safeAreaChanged', updateSafeArea);
-    tg.onEvent?.('contentSafeAreaChanged', updateSafeArea);
   }
 })();
 
